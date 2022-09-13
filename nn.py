@@ -67,7 +67,7 @@ def convert_to_nn_state(board: chess.Board):
     return torch.from_numpy(np.stack((pawns, b_pawns, bishops, b_bishops, rooks, b_rooks, knights, b_knights, queens, b_queens, kings, b_kings, repeated_3, repeated_5, fifty_moves, wck, wcq, bck, bcq), axis=0)).float()
     
 
-class KingfisherDNN(nn.Module):
+class HyperionDNN(nn.Module):
     
     def __init__(self):
         super().__init__()
@@ -82,8 +82,13 @@ class KingfisherDNN(nn.Module):
         self.lin2 = nn.Linear(512, 1)
         self.lin3 = nn.Linear(128,1)
         self.tanh = nn.Tanh()
+    
+    @property
+    def device(self):
+        return next(self.parameters()).device
 
     def forward(self, x, mini=True):
+        x.to(self.device())
         x = self.conv1(x)
         x = self.bn1(x)
         x = nn.functional.relu(x)

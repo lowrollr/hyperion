@@ -5,14 +5,14 @@
 from copy import deepcopy
 from tracemalloc import start
 from evaluation import MCST_Evaluator
-from nn import KingfisherDNN
+from nn import HyperionDNN
 from torch.optim import sgd
 import chess
 import torch
 import time
 
-
-king = KingfisherDNN()
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+king = HyperionDNN().to(device)
 # king.load_state_dict(torch.load('./king_53.pth'))
 
 optimizer = torch.optim.Adam(king.parameters(), lr=1e-3)

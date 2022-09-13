@@ -15,6 +15,7 @@ import torch.nn as nn
 class MCST_Evaluator:
     def __init__(self, model: Sequential, training=True):
         self.model = model
+
         self.ucb_scores = dict()
         self.loss_fn = nn.NLLLoss()
         self.training_evals = []
@@ -138,7 +139,7 @@ class MCST_Evaluator:
         board.pop()
         if first:
             self.training_evals.append(engine_eval)
-            self.training_results.append(torch.tensor([result]))
+            self.training_results.append(torch.tensor([result]).to(self.model.device()))
         return result, move
 
  
