@@ -139,7 +139,7 @@ class MCST_Evaluator:
         board.pop()
         if first:
             self.training_evals.append(engine_eval)
-            self.training_results.append(torch.tensor([result]).to(self.model.device()))
+            self.training_results.append(torch.tensor([result]).to(self.model.device))
         return result, move
 
  

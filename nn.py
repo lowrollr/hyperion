@@ -88,7 +88,7 @@ class HyperionDNN(nn.Module):
         return next(self.parameters()).device
 
     def forward(self, x, mini=True):
-        x.to(self.device())
+        x.to(self.device)
         x = self.conv1(x)
         x = self.bn1(x)
         x = nn.functional.relu(x)
