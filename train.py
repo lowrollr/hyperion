@@ -14,12 +14,12 @@ device = torch.device('cpu')
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
     torch.backends.cudnn.benchmark = True
-
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
 else:
     torch.set_default_tensor_type(torch.FloatTensor)
 torch.set_default_dtype(torch.float)
 king = HyperionDNN().to(device)
+print(device)
 # king.load_state_dict(torch.load('./king_53.pth'))∂
 
 optimizer = torch.optim.Adam(king.parameters(), lr=1e-3)
