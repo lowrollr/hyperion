@@ -71,16 +71,15 @@ class HyperionDNN(nn.Module):
     
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(19, 256, (3, 3))
-        self.bn1 = nn.BatchNorm1d(6)
-        self.bn2 = nn.BatchNorm1d(4)
-        self.conv2 = nn.Conv2d(256, 512, (3, 3))
-        self.conv3 = nn.Conv2d(512, 512, (4, 4))
-        self.conv4 = nn.Conv2d(256, 128, (6,6))
-        self.flatten = nn.Flatten(0,2)
-        self.lin1 = nn.Linear(512, 512)
-        self.lin2 = nn.Linear(512, 1)
-        self.lin3 = nn.Linear(128,1)
+        self.conv1 = nn.Conv3d(1, 256, (1,3,3))
+        self.bn1 = nn.BatchNorm3d(256)
+        self.bn2 = nn.BatchNorm3d(512)
+        self.bn3 = nn.BatchNorm3d(512)
+        self.conv2 = nn.Conv3d(256, 512, (1,3,3))
+        self.conv3 = nn.Conv3d(512, 512, (1,4,4))
+        self.flatten = nn.Flatten(1,4)
+        self.lin1 = nn.Linear(9728, 9728)
+        self.lin2 = nn.Linear(9728, 1)
         self.tanh = nn.Tanh()
     
     @property
@@ -88,28 +87,22 @@ class HyperionDNN(nn.Module):
         return next(self.parameters()).device
 
     def forward(self, x, mini=True):
-        x.to(self.device)
         x = self.conv1(x)
         x = self.bn1(x)
         x = nn.functional.relu(x)
-        if mini:
-            x = self.conv4(x)
-            x = self.flatten(x)
-            x = self.lin3(x)
-            x = self.tanh(x)
-            return x
-        else:
-            x = self.conv2(x)
-            x = self.bn2(x)
-            x = nn.functional.relu(x)
-            x = self.conv3(x)
-            x = nn.functional.relu(x)
-            x = self.flatten(x)
-            x = self.lin1(x)
-            x = nn.functional.relu(x)
-            x = self.lin2(x)
-            x = self.tanh(x)
-            return x
+        
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = nn.functional.relu(x)
+        x = self.conv3(x)
+        x = self.bn3(x)
+        x = nn.functional.relu(x)
+        x = self.flatten(x)
+        x = self.lin1(x)
+        x = nn.functional.relu(x)
+        x = self.lin2(x)
+        x = self.tanh(x)
+        return x
     
     
 

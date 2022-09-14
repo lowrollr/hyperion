@@ -46,11 +46,10 @@ class MCST_Evaluator:
 
   
 
-    def get_nn_score(self, board: chess.Board, use_mini: bool):
+    def get_nn_score(self, board_states: torch.Tensor, use_mini: bool):
         start_time = time.time()
-        converted = convert_to_nn_state(board)
         
-        res = self.model(converted, use_mini)
+        res = self.model(board_states, use_mini)
         self.pred_time += time.time() - start_time
         return res
     
@@ -111,23 +110,23 @@ class MCST_Evaluator:
             return choices(moves, move_ps)[0]
 
     def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move]:
-        best_move = (-2 if board.turn else 2, 0, None)
-        moves = []
-        move_ps = []
+        legal_moves = list(board.legal_moves)
+        if use_mini:
+            return (0.0, 0, choices(legal_moves)[0])
 
-        
 
+        board_states = []
         for i,move in enumerate(board.legal_moves):
-            engine_eval = self.get_nn_score(board, use_mini)
-            if board.turn:
-                best_move = max(best_move, (engine_eval, i, move))
-            else:
-                best_move = min(best_move, (engine_eval, i, move))
-        if not exploring:
-            return best_move
-        else:
-            return choices(moves, move_ps)
-    
+            board.push(move)
+            board_states.append(convert_to_nn_state(board).view(1, 19, 8, 8))
+            board.pop()
+            
+
+        scores = self.get_nn_score(torch.stack(board_states).to(self.model.device), use_mini)
+        
+        best = max(zip(scores, enumerate(legal_moves))) if board.turn else min(zip(scores, enumerate(legal_moves)))
+        return (best[0], best[1][0], best[1][1])
+        
     def playout(self, board: chess.Board, first=False) -> int:
         term_state = self.terminal_state(board)
         if term_state is not None:
@@ -139,7 +138,7 @@ class MCST_Evaluator:
         board.pop()
         if first:
             self.training_evals.append(engine_eval)
-            self.training_results.append(torch.tensor([result]).to(self.model.device))
+            self.training_results.append(torch.tensor([result]))
         return result, move
 
  
@@ -150,8 +149,7 @@ class MCST_Evaluator:
             
             
             self.explore(board, self.ucb_scores)
-            
-
+        
         s, _, m = self.choose_expansion(board, self.ucb_scores, allow_null=False, exploring=False)
         if m:
             self.walk_tree(m.uci())
