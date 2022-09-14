@@ -120,8 +120,8 @@ class MCST_Evaluator:
             board.push(move)
             board_states.append(convert_to_nn_state(board))
             board.pop()
-
-        input_tensor = torch.tensor(np.stack(board_states, axis=0))
+        input = np.stack(board_states, axis=0)
+        input_tensor = torch.as_tensor(input)
         self.load_time += time.time() - start_load
         scores = self.get_nn_score(input_tensor, use_mini)
         choose_time = time.time()

@@ -23,7 +23,6 @@ PIECE_ID_MAP = {
 
 def convert_to_nn_state(board: chess.Board):
     # 12 piece planes (6 piece types per player)
-    start_time = time.time()
     data_tensor = np.zeros(shape=(19,8,8), dtype=np.float32)
     if board.is_fivefold_repetition():
         data_tensor[12] += 1
@@ -44,7 +43,6 @@ def convert_to_nn_state(board: chess.Board):
         r, c = sq // 8, sq % 8
         data_tensor[v][r][c] = 1.0
     data_tensor = np.expand_dims(data_tensor, axis=0)
-    print('made board in ', time.time() - start_time)
     return data_tensor
 
 class HyperionDNN(nn.Module):
