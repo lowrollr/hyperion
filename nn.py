@@ -6,64 +6,39 @@ import torch
 import torch.nn as nn
 
 
-def convert_to_nn_state(board: chess.Board, device):
+PIECE_ID_MAP = {
+    (chess.PAWN, 0) : 0,
+    (chess.PAWN, 1):  1,
+    (chess.KNIGHT, 0): 2,
+    (chess.KNIGHT, 1): 3,
+    (chess.BISHOP, 0): 4,
+    (chess.BISHOP, 1): 5,
+    (chess.ROOK, 0): 6,
+    (chess.ROOK, 1): 7,
+    (chess.QUEEN, 0): 8,
+    (chess.QUEEN, 1): 9,
+    (chess.KING, 0): 10,
+    (chess.KING, 1): 11,
+}
+
+
+def convert_to_nn_state(board: chess.Board):
     # 12 piece planes (6 piece types per player)
-    pawns = np.zeros(shape=(8,8))
-    b_pawns = np.zeros(shape=(8,8))
-    bishops = np.zeros(shape=(8,8))
-    b_bishops = np.zeros(shape=(8,8))
-    rooks = np.zeros(shape=(8,8))
-    b_rooks = np.zeros(shape=(8,8))
-    knights = np.zeros(shape=(8,8))
-    b_knights = np.zeros(shape=(8,8))
-    queens = np.zeros(shape=(8,8))
-    b_queens = np.zeros(shape=(8,8))
-    kings = np.zeros(shape=(8,8))
-    b_kings = np.zeros(shape=(8,8))
-    repeated_3 =  np.ones(shape=(8,8)) if board.is_repetition() else np.zeros(shape=(8,8))
-    repeated_5 =  np.ones(shape=(8,8)) if board.is_fivefold_repetition() else np.zeros(shape=(8,8))
-    fifty_moves = np.ones(shape=(8,8)) if board.is_fifty_moves() else np.zeros(shape=(8,8))
-    wck = np.ones(shape=(8,8)) if board.has_kingside_castling_rights(1) else np.zeros(shape=(8,8))
-    wcq = np.ones(shape=(8,8)) if board.has_queenside_castling_rights(1) else np.zeros(shape=(8,8))
-    bck = np.ones(shape=(8,8)) if board.has_kingside_castling_rights(0) else np.zeros(shape=(8,8))
-    bcq = np.ones(shape=(8,8)) if board.has_queenside_castling_rights(0) else np.zeros(shape=(8,8))
+    data_tensor = torch.zeros(19,8,8)
+    data_tensor[12] = torch.ones(8,8) if board.is_fivefold_repetition() else torch.zeros(8,8)
+    data_tensor[13]= torch.ones(8,8) if board.is_fifty_moves() else torch.zeros(8,8)
+    data_tensor[14] = torch.ones(8,8) if board.has_kingside_castling_rights(1) else torch.zeros(8,8)
+    data_tensor[15] = torch.ones(8,8) if board.has_queenside_castling_rights(1) else torch.zeros(8,8)
+    data_tensor[16] = torch.ones(8,8) if board.has_kingside_castling_rights(0) else torch.zeros(8,8)
+    data_tensor[17] = torch.ones(8,8) if board.has_queenside_castling_rights(0) else torch.zeros(8,8)
+    data_tensor[18] = torch.ones(8,8) if board.is_repetition() else torch.zeros(8,8)
 
     for sq, piece in board.piece_map().items():
+        v = PIECE_ID_MAP[(piece.piece_type, piece.color)]
         r, c = sq // 8, sq % 8
-        if piece.piece_type == chess.PAWN:
-            if piece.color:
-                pawns[r][c] = 1
-            else:
-                b_pawns[r][c] = 1
-        elif piece.piece_type == chess.KNIGHT:
-            if piece.color:
-                knights[r][c] = 1
-            else:
-                b_knights[r][c] = 1
-        elif piece.piece_type == chess.BISHOP:
-            if piece.color:
-                bishops[r][c] = 1
-            else:
-                b_bishops[r][c] = 1
-        elif piece.piece_type == chess.ROOK:
-            if piece.color:
-                rooks[r][c] = 1
-            else:
-                b_rooks[r][c] = 1
-        elif piece.piece_type == chess.QUEEN:
-            if piece.color:
-                queens[r][c] = 1
-            else:
-                b_queens[r][c] = 1
-        elif piece.piece_type == chess.KING:
-            if piece.color:
-                kings[r][c] = 1
-            else:
-                b_kings[r][c] = 1
-        else:
-            print('UNKNOWN PIECE: ', piece)
+        data_tensor[v][r][c] = 1.0
 
-    return torch.from_numpy(np.stack((pawns, b_pawns, bishops, b_bishops, rooks, b_rooks, knights, b_knights, queens, b_queens, kings, b_kings, repeated_3, repeated_5, fifty_moves, wck, wcq, bck, bcq), axis=0)).to(device).float().view(1, 19, 8, 8)
+    return data_tensor.view(1, 19, 8, 8)
     
 
 class HyperionDNN(nn.Module):
@@ -83,11 +58,6 @@ class HyperionDNN(nn.Module):
         self.lin3 = nn.Linear(155648, 1)
         self.tanh = nn.Tanh()
         self.tanh2 = nn.Tanh()
-
-    
-    @property
-    def device(self):
-        return next(self.parameters()).device
 
     def forward(self, x, **kwargs):
         x = self.conv1(x)
