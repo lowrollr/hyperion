@@ -5,7 +5,7 @@ import chess
 import torch
 import torch.nn as nn
 
-def convert_to_nn_state(board: chess.Board):
+def convert_to_nn_state(board: chess.Board, device):
     # 12 piece planes (6 piece types per player)
     pawns = np.zeros(shape=(8,8))
     b_pawns = np.zeros(shape=(8,8))
@@ -64,7 +64,7 @@ def convert_to_nn_state(board: chess.Board):
     
     
     
-    return torch.from_numpy(np.stack((pawns, b_pawns, bishops, b_bishops, rooks, b_rooks, knights, b_knights, queens, b_queens, kings, b_kings, repeated_3, repeated_5, fifty_moves, wck, wcq, bck, bcq), axis=0)).float()
+    return torch.from_numpy(np.stack((pawns, b_pawns, bishops, b_bishops, rooks, b_rooks, knights, b_knights, queens, b_queens, kings, b_kings, repeated_3, repeated_5, fifty_moves, wck, wcq, bck, bcq), axis=0), device=device).float()
     
 
 class HyperionDNN(nn.Module):

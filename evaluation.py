@@ -24,7 +24,6 @@ class MCST_Evaluator:
 
     def reset(self):
         self.ucb_scores = dict()
-        self.model = deepcopy(self.model)
 
     @staticmethod
     def ucb1(total_score: float, num_visits: int, num_parent_visits: int, c_val: int = 2) -> float:
@@ -110,9 +109,6 @@ class MCST_Evaluator:
             return choices(moves, move_ps)[0]
 
     def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move]:
-        
-        
-
         board_states = []
         legal_moves = list(board.legal_moves)
         for _, move in enumerate(legal_moves):
@@ -120,8 +116,7 @@ class MCST_Evaluator:
             board_states.append(convert_to_nn_state(board).view(1, 19, 8, 8))
             board.pop()
             
-
-        scores = self.get_nn_score(torch.stack(board_states).to(self.model.device), use_mini)
+        scores = self.get_nn_score(torch.stack(board_states), use_mini)
         if exploring:
             
             scores_list = [(legal_moves[i], scores[i]) for i in range(len(scores))]
@@ -152,8 +147,6 @@ class MCST_Evaluator:
         self.pred_time = 0.0
         start_time = time.time()
         for i in range(iterations):
-            
-            
             self.explore(board, self.ucb_scores)
         
         s, _, m = self.choose_expansion(board, self.ucb_scores, allow_null=False, exploring=False)
