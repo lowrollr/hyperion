@@ -1,8 +1,6 @@
 import time
-import xdrlib
 import numpy as np
 import chess
-# import keras
 import torch
 import torch.nn as nn
 
@@ -25,7 +23,9 @@ PIECE_ID_MAP = {
 
 def convert_to_nn_state(board: chess.Board):
     # 12 piece planes (6 piece types per player)
+    time_start = time.time()
     data_tensor = torch.zeros(19,8,8)
+    print('create tensor', time.time() - time_start)
     time_start = time.time()
     if board.is_fivefold_repetition():
         data_tensor[12] += 1
