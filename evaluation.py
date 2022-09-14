@@ -49,7 +49,7 @@ class MCST_Evaluator:
     def get_nn_score(self, board_states: torch.Tensor, use_mini: bool):
         start_time = time.time()
         
-        res = self.model(board_states, use_mini)
+        res = self.model(board_states, mini=use_mini)
         self.pred_time += time.time() - start_time
         return res
     
@@ -110,29 +110,35 @@ class MCST_Evaluator:
             return choices(moves, move_ps)[0]
 
     def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move]:
-        legal_moves = list(board.legal_moves)
-        if use_mini:
-            return (0.0, 0, choices(legal_moves)[0])
-
+        
+        
 
         board_states = []
-        for i,move in enumerate(board.legal_moves):
+        legal_moves = list(board.legal_moves)
+        for _, move in enumerate(legal_moves):
             board.push(move)
             board_states.append(convert_to_nn_state(board).view(1, 19, 8, 8))
             board.pop()
             
 
         scores = self.get_nn_score(torch.stack(board_states).to(self.model.device), use_mini)
-        
-        best = max(zip(scores, enumerate(legal_moves))) if board.turn else min(zip(scores, enumerate(legal_moves)))
-        return (best[0], best[1][0], best[1][1])
+        if exploring:
+            
+            scores_list = [(legal_moves[i], scores[i]) for i in range(len(scores))]
+            best = choices(scores_list, [i[1] for i in scores_list], k=1)[0]
+            return (best[1], 0, best[0])
+            
+
+        else:
+            best = max(zip(scores, enumerate(legal_moves))) if board.turn else min(zip(scores, enumerate(legal_moves)))
+            return (best[0], best[1][0], best[1][1])
         
     def playout(self, board: chess.Board, first=False) -> int:
         term_state = self.terminal_state(board)
         if term_state is not None:
             return (term_state, None)
 
-        engine_eval, _, move = self.choose_move(board, not first, False)
+        engine_eval, _, move = self.choose_move(board, not first, first)
         board.push(move)
         result, _ = self.playout(board)
         board.pop()

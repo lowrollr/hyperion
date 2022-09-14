@@ -78,15 +78,19 @@ class HyperionDNN(nn.Module):
         self.conv2 = nn.Conv3d(256, 512, (1,3,3))
         self.conv3 = nn.Conv3d(512, 512, (1,4,4))
         self.flatten = nn.Flatten(1,4)
+        self.flatten2 = nn.Flatten(1,4)
         self.lin1 = nn.Linear(9728, 9728)
         self.lin2 = nn.Linear(9728, 1)
+        self.lin3 = nn.Linear(155648, 1)
         self.tanh = nn.Tanh()
+        self.tanh2 = nn.Tanh()
+
     
     @property
     def device(self):
         return next(self.parameters()).device
 
-    def forward(self, x, mini=True):
+    def forward(self, x, **kwargs):
         x = self.conv1(x)
         x = self.bn1(x)
         x = nn.functional.relu(x)
@@ -94,14 +98,19 @@ class HyperionDNN(nn.Module):
         x = self.conv2(x)
         x = self.bn2(x)
         x = nn.functional.relu(x)
-        x = self.conv3(x)
-        x = self.bn3(x)
-        x = nn.functional.relu(x)
-        x = self.flatten(x)
-        x = self.lin1(x)
-        x = nn.functional.relu(x)
-        x = self.lin2(x)
-        x = self.tanh(x)
+        if kwargs['mini']:
+            x = self.flatten2(x)
+            x = self.lin3(x)
+            x = self.tanh2(x)
+        else:
+            x = self.conv3(x)
+            x = self.bn3(x)
+            x = nn.functional.relu(x)
+            x = self.flatten(x)
+            x = self.lin1(x)
+            x = nn.functional.relu(x)
+            x = self.lin2(x)
+            x = self.tanh(x)
         return x
     
     
