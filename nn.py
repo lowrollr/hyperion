@@ -25,19 +25,24 @@ PIECE_ID_MAP = {
 def convert_to_nn_state(board: chess.Board):
     # 12 piece planes (6 piece types per player)
     data_tensor = torch.zeros(19,8,8)
-    data_tensor[12] = torch.ones(8,8) if board.is_fivefold_repetition() else torch.zeros(8,8)
-    data_tensor[13]= torch.ones(8,8) if board.is_fifty_moves() else torch.zeros(8,8)
-    data_tensor[14] = torch.ones(8,8) if board.has_kingside_castling_rights(1) else torch.zeros(8,8)
-    data_tensor[15] = torch.ones(8,8) if board.has_queenside_castling_rights(1) else torch.zeros(8,8)
-    data_tensor[16] = torch.ones(8,8) if board.has_kingside_castling_rights(0) else torch.zeros(8,8)
-    data_tensor[17] = torch.ones(8,8) if board.has_queenside_castling_rights(0) else torch.zeros(8,8)
-    data_tensor[18] = torch.ones(8,8) if board.is_repetition() else torch.zeros(8,8)
-
+    if board.is_fivefold_repetition():
+        data_tensor[12] += 1
+    if board.is_fifty_moves():
+        data_tensor[13] += 1
+    if board.has_kingside_castling_rights(1):
+        data_tensor[14] += 1
+    if board.has_queenside_castling_rights(1):
+        data_tensor[15] += 1
+    if board.has_kingside_castling_rights(0):
+        data_tensor[16] += 1
+    if board.has_queenside_castling_rights(0):
+        data_tensor[17] += 1
+    if board.is_repetition():
+        data_tensor += 1
     for sq, piece in board.piece_map().items():
         v = PIECE_ID_MAP[(piece.piece_type, piece.color)]
         r, c = sq // 8, sq % 8
         data_tensor[v][r][c] = 1.0
-
     return data_tensor.unsqueeze(1)
     
 
