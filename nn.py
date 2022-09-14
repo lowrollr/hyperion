@@ -38,7 +38,7 @@ def convert_to_nn_state(board: chess.Board):
         r, c = sq // 8, sq % 8
         data_tensor[v][r][c] = 1.0
 
-    return data_tensor.view(1, 19, 8, 8)
+    return data_tensor.unsqueeze(1)
     
 
 class HyperionDNN(nn.Module):
