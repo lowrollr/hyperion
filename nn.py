@@ -48,7 +48,7 @@ def convert_to_nn_state(board: chess.Board):
         r, c = sq // 8, sq % 8
         data_tensor[v][r][c] = 1.0
     print("fill_pieces", time.time() - time_start)
-    return data_tensor.unsqueeze(1)
+    return data_tensor.unsqueeze(0)
     
 
 class HyperionDNN(nn.Module):
@@ -77,7 +77,7 @@ class HyperionDNN(nn.Module):
         x = self.conv2(x)
         x = self.bn2(x)
         x = nn.functional.relu(x)
-        if kwargs['mini']:
+        if kwargs.get('mini'):
             x = self.flatten2(x)
             x = self.lin3(x)
             x = self.tanh2(x)
