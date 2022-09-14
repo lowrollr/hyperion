@@ -21,6 +21,8 @@ class MCST_Evaluator:
         self.training_evals = []
         self.training_results = []
         self.pred_time = 0.0
+        self.load_time = 0.0
+        self.choose_time = 0.0
 
     def reset(self):
         self.ucb_scores = dict()
@@ -111,23 +113,27 @@ class MCST_Evaluator:
     def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move]:
         
         legal_moves = list(board.legal_moves)
+        start_load = time.time()
         board_states = torch.empty((len(legal_moves), 1, 19, 8, 8))
         
         for i, move in enumerate(legal_moves):
             board.push(move)
             board_states[i] = convert_to_nn_state(board)
             board.pop()
+        self.load_time += time.time() - start_load
         scores = self.get_nn_score(board_states, use_mini)
+        choose_time = time.time()
         if exploring:
-            
             scores_list = [(legal_moves[i], scores[i]) for i in range(len(scores))]
             best = choices(scores_list, [i[1] for i in scores_list], k=1)[0]
-            return (best[1], 0, best[0])
-            
-
+            res = (best[1], 0, best[0])
+            self.choose_time = time.time() - choose_time
+            return res
         else:
             best = max(zip(scores, enumerate(legal_moves))) if board.turn else min(zip(scores, enumerate(legal_moves)))
-            return (best[0], best[1][0], best[1][1])
+            res =  (best[0], best[1][0], best[1][1])
+            self.choose_time = time.time() - choose_time
+            return res
         
     def playout(self, board: chess.Board, first=False) -> int:
         term_state = self.terminal_state(board)
@@ -146,6 +152,8 @@ class MCST_Evaluator:
  
     def make_best_move(self, board: chess.Board, iterations=200) -> Tuple[chess.Move, float]:
         self.pred_time = 0.0
+        self.choose_time = 0.0
+        self.load_time = 0.0
         start_time = time.time()
         for i in range(iterations):
             self.explore(board, self.ucb_scores)
@@ -155,8 +163,10 @@ class MCST_Evaluator:
             self.walk_tree(m.uci())
             board.push(m)
         total_time = time.time() - start_time
-        other_time = total_time - self.pred_time
+        other_time = total_time - (self.pred_time + self.choose_time + self.load_time)
         print("Spent ", self.pred_time, "predicting")
+        print("Spent ", self.load_time, "loading data")
+        print("Spent ", self.choose_time, "choosing")
         print("Spent", other_time, "doing other things")
             
         return (m, s)
