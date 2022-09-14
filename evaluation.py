@@ -131,8 +131,9 @@ class MCST_Evaluator:
             self.choose_time += time.time() - choose_time
             return res
         else:
-            best = max(zip(scores, enumerate(legal_moves))) if board.turn else min(zip(scores, enumerate(legal_moves)))
-            res =  (best[0], best[1][0], best[1][1])
+            index = torch.argmax(scores)
+            val = torch.max(scores)
+            res =  (val.item(), index.item(), legal_moves[index])
             self.choose_time += time.time() - choose_time
             return res
         
