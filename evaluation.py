@@ -127,12 +127,12 @@ class MCST_Evaluator:
             scores_list = [(legal_moves[i], scores[i]) for i in range(len(scores))]
             best = choices(scores_list, [i[1] for i in scores_list], k=1)[0]
             res = (best[1], 0, best[0])
-            self.choose_time = time.time() - choose_time
+            self.choose_time += time.time() - choose_time
             return res
         else:
             best = max(zip(scores, enumerate(legal_moves))) if board.turn else min(zip(scores, enumerate(legal_moves)))
             res =  (best[0], best[1][0], best[1][1])
-            self.choose_time = time.time() - choose_time
+            self.choose_time += time.time() - choose_time
             return res
         
     def playout(self, board: chess.Board, first=False) -> int:
