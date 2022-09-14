@@ -22,7 +22,7 @@ print(device)
 # king.load_state_dict(torch.load('./king_53.pth'))∂
 
 optimizer = torch.optim.Adam(king.parameters(), lr=1e-3)
-evaluator = MCST_Evaluator(king)
+evaluator = MCST_Evaluator(king, device)
 game_count = 0
 board = chess.Board()
 
