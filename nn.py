@@ -5,41 +5,65 @@ import chess
 import torch
 import torch.nn as nn
 
-PIECE_ID_MAP = {
-    (chess.PAWN, 0) : 0,
-    (chess.PAWN, 1):  1,
-    (chess.KNIGHT, 0): 2,
-    (chess.KNIGHT, 1): 3,
-    (chess.BISHOP, 0): 4,
-    (chess.BISHOP, 1): 5,
-    (chess.ROOK, 0): 6,
-    (chess.ROOK, 1): 7,
-    (chess.QUEEN, 0): 8,
-    (chess.QUEEN, 1): 9,
-    (chess.KING, 0): 10,
-    (chess.KING, 1): 11,
-}
-
 
 def convert_to_nn_state(board: chess.Board):
     # 12 piece planes (6 piece types per player)
-    pieces = torch.zeros(12,8,8)
-    repeated_3 =  torch.ones(1,8,8) if board.is_repetition() else torch.zeros(1,8,8)
-    repeated_5 =  torch.ones(1,8,8) if board.is_fivefold_repetition() else torch.zeros(1,8,8)
-    fifty_moves = torch.ones(1,8,8) if board.is_fifty_moves() else torch.zeros(1,8,8)
-    wck = torch.ones(1,8,8) if board.has_kingside_castling_rights(1) else torch.zeros(1,8,8)
-    wcq = torch.ones(1,8,8) if board.has_queenside_castling_rights(1) else torch.zeros(1,8,8)
-    bck = torch.ones(1,8,8) if board.has_kingside_castling_rights(0) else torch.zeros(1,8,8)
-    bcq = torch.ones(1,8,8) if board.has_queenside_castling_rights(0) else torch.zeros(1,8,8)
+    pawns = torch.zeros(8,8)
+    b_pawns = torch.zeros(8,8)
+    bishops = torch.zeros(8,8)
+    b_bishops = torch.zeros(8,8)
+    rooks = torch.zeros(8,8)
+    b_rooks = torch.zeros(8,8)
+    knights = torch.zeros(8,8)
+    b_knights = torch.zeros(8,8)
+    queens = torch.zeros(8,8)
+    b_queens = torch.zeros(8,8)
+    kings = torch.zeros(8,8)
+    b_kings = torch.zeros(8,8)
+    repeated_3 =  torch.ones(8,8) if board.is_repetition() else torch.zeros(8,8)
+    repeated_5 =  torch.ones(8,8) if board.is_fivefold_repetition() else torch.zeros(8,8)
+    fifty_moves = torch.ones(8,8) if board.is_fifty_moves() else torch.zeros(8,8)
+    wck = torch.ones(8,8) if board.has_kingside_castling_rights(1) else torch.zeros(8,8)
+    wcq = torch.ones(8,8) if board.has_queenside_castling_rights(1) else torch.zeros(8,8)
+    bck = torch.ones(8,8) if board.has_kingside_castling_rights(0) else torch.zeros(8,8)
+    bcq = torch.ones(8,8) if board.has_queenside_castling_rights(0) else torch.zeros(8,8)
 
     for sq, piece in board.piece_map().items():
-        v = PIECE_ID_MAP[(piece.piece_type, piece.color)]
         r, c = sq // 8, sq % 8
-        pieces[v][r][c] = 1.0
+        if piece.piece_type == chess.PAWN:
+            if piece.color:
+                pawns[r][c] = 1
+            else:
+                b_pawns[r][c] = 1
+        elif piece.piece_type == chess.KNIGHT:
+            if piece.color:
+                knights[r][c] = 1
+            else:
+                b_knights[r][c] = 1
+        elif piece.piece_type == chess.BISHOP:
+            if piece.color:
+                bishops[r][c] = 1
+            else:
+                b_bishops[r][c] = 1
+        elif piece.piece_type == chess.ROOK:
+            if piece.color:
+                rooks[r][c] = 1
+            else:
+                b_rooks[r][c] = 1
+        elif piece.piece_type == chess.QUEEN:
+            if piece.color:
+                queens[r][c] = 1
+            else:
+                b_queens[r][c] = 1
+        elif piece.piece_type == chess.KING:
+            if piece.color:
+                kings[r][c] = 1
+            else:
+                b_kings[r][c] = 1
+        else:
+            print('UNKNOWN PIECE: ', piece)
 
-    return torch.cat(
-        (pieces, repeated_3, repeated_5, fifty_moves, wck, wcq, bck, bcq), 
-        dim=0).view(1, 19, 8, 8)
+    return torch.stack((pawns, b_pawns, bishops, b_bishops, rooks, b_rooks, knights, b_knights, queens, b_queens, kings, b_kings, repeated_3, repeated_5, fifty_moves, wck, wcq, bck, bcq), axis=0).float().view(1, 19, 8, 8)
     
 
 class HyperionDNN(nn.Module):
