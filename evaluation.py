@@ -1,5 +1,5 @@
 from copy import copy, deepcopy
-from random import choices, randint, sample, shuffle
+from random import choice, choices, randint, sample, shuffle
 import time
 from tracemalloc import start
 from typing import Optional, Tuple
@@ -115,7 +115,11 @@ class MCST_Evaluator:
         legal_moves = list(board.legal_moves)
         start_load = time.time()
         board_states = []
-        
+
+        if use_mini:
+            return (0.0, 0, choice(legal_moves))
+
+
         for _, move in enumerate(legal_moves):
             board.push(move)
             board_states.append(convert_to_nn_state(board))
