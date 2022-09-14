@@ -13,9 +13,9 @@ import torch.nn as nn
 
 
 class MCST_Evaluator:
-    def __init__(self, model: Sequential, training=True):
+    def __init__(self, model: Sequential, device, training=True):
         self.model = model
-
+        self.device = device
         self.ucb_scores = dict()
         self.loss_fn = nn.NLLLoss()
         self.training_evals = []
@@ -120,7 +120,7 @@ class MCST_Evaluator:
             board.push(move)
             board_states.append(convert_to_nn_state(board))
             board.pop()
-        input_tensor = torch.from_numpy(np.stack(board_states, axis=0))
+        input_tensor = torch.from_numpy(np.stack(board_states, axis=0)).to(self.device)
         self.load_time += time.time() - start_load
         scores = self.get_nn_score(input_tensor, use_mini)
         choose_time = time.time()

@@ -13,7 +13,7 @@ else:
 torch.set_default_dtype(torch.float)
 
 king = HyperionDNN().to(device)
-evaluator = MCST_Evaluator(king)
+evaluator = MCST_Evaluator(king, device)
 board = chess.Board()
 time_start = time.time()
 for i in range(1):
