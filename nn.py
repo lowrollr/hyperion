@@ -5,64 +5,67 @@ import chess
 import torch
 import torch.nn as nn
 
-def convert_to_nn_state(board: chess.Board, device):
+
+def convert_to_nn_state(board: chess.Board):
     # 12 piece planes (6 piece types per player)
-    pawns = np.zeros(shape=(8,8))
-    b_pawns = np.zeros(shape=(8,8))
-    bishops = np.zeros(shape=(8,8))
-    b_bishops = np.zeros(shape=(8,8))
-    rooks = np.zeros(shape=(8,8))
-    b_rooks = np.zeros(shape=(8,8))
-    knights = np.zeros(shape=(8,8))
-    b_knights = np.zeros(shape=(8,8))
-    queens = np.zeros(shape=(8,8))
-    b_queens = np.zeros(shape=(8,8))
-    kings = np.zeros(shape=(8,8))
-    b_kings = np.zeros(shape=(8,8))
-    repeated_3 =  np.ones(shape=(8,8)) if board.is_repetition() else np.zeros(shape=(8,8))
-    repeated_5 =  np.ones(shape=(8,8)) if board.is_fivefold_repetition() else np.zeros(shape=(8,8))
-    fifty_moves = np.ones(shape=(8,8)) if board.is_fifty_moves() else np.zeros(shape=(8,8))
-    wck = np.ones(shape=(8,8)) if board.has_kingside_castling_rights(1) else np.zeros(shape=(8,8))
-    wcq = np.ones(shape=(8,8)) if board.has_queenside_castling_rights(1) else np.zeros(shape=(8,8))
-    bck = np.ones(shape=(8,8)) if board.has_kingside_castling_rights(0) else np.zeros(shape=(8,8))
-    bcq = np.ones(shape=(8,8)) if board.has_queenside_castling_rights(0) else np.zeros(shape=(8,8))
+    pawns = torch.zeros(8,8)
+    b_pawns = torch.zeros(8,8)
+    bishops = torch.zeros(8,8)
+    b_bishops = torch.zeros(8,8)
+    rooks = torch.zeros(8,8)
+    b_rooks = torch.zeros(8,8)
+    knights = torch.zeros(8,8)
+    b_knights = torch.zeros(8,8)
+    queens = torch.zeros(8,8)
+    b_queens = torch.zeros(8,8)
+    kings = torch.zeros(8,8)
+    b_kings = torch.zeros(8,8)
+    repeated_3 =  torch.ones(8,8) if board.is_repetition() else torch.zeros(8,8)
+    repeated_5 =  torch.ones(8,8) if board.is_fivefold_repetition() else torch.zeros(8,8)
+    fifty_moves = torch.ones(8,8) if board.is_fifty_moves() else torch.zeros(8,8)
+    wck = torch.ones(8,8) if board.has_kingside_castling_rights(1) else torch.zeros(8,8)
+    wcq = torch.ones(8,8) if board.has_queenside_castling_rights(1) else torch.zeros(8,8)
+    bck = torch.ones(8,8) if board.has_kingside_castling_rights(0) else torch.zeros(8,8)
+    bcq = torch.ones(8,8) if board.has_queenside_castling_rights(0) else torch.zeros(8,8)
 
     for sq, piece in board.piece_map().items():
         r, c = sq // 8, sq % 8
         if piece.piece_type == chess.PAWN:
             if piece.color:
-                pawns[r][c] = 1
+                pawns[r][c] = 1.0
             else:
-                b_pawns[r][c] = 1
+                b_pawns[r][c] = 1.0
         elif piece.piece_type == chess.KNIGHT:
             if piece.color:
-                knights[r][c] = 1
+                knights[r][c] = 1.0
             else:
-                b_knights[r][c] = 1
+                b_knights[r][c] = 1.0
         elif piece.piece_type == chess.BISHOP:
             if piece.color:
-                bishops[r][c] = 1
+                bishops[r][c] = 1.0
             else:
-                b_bishops[r][c] = 1
+                b_bishops[r][c] = 1.0
         elif piece.piece_type == chess.ROOK:
             if piece.color:
-                rooks[r][c] = 1
+                rooks[r][c] = 1.0
             else:
-                b_rooks[r][c] = 1
+                b_rooks[r][c] = 1.0
         elif piece.piece_type == chess.QUEEN:
             if piece.color:
-                queens[r][c] = 1
+                queens[r][c] = 1.0
             else:
-                b_queens[r][c] = 1
+                b_queens[r][c] = 1.0
         elif piece.piece_type == chess.KING:
             if piece.color:
-                kings[r][c] = 1
+                kings[r][c] = 1.0
             else:
-                b_kings[r][c] = 1
+                b_kings[r][c] = 1.0
         else:
             print('UNKNOWN PIECE: ', piece)
-            
-    return torch.from_numpy(np.stack((pawns, b_pawns, bishops, b_bishops, rooks, b_rooks, knights, b_knights, queens, b_queens, kings, b_kings, repeated_3, repeated_5, fifty_moves, wck, wcq, bck, bcq), axis=0)).to(device).float().view(1, 19, 8, 8)
+
+    return torch.stack(
+        (pawns, b_pawns, bishops, b_bishops, rooks, b_rooks, knights, b_knights, queens, b_queens, kings, b_kings, repeated_3, repeated_5, fifty_moves, wck, wcq, bck, bcq), 
+        axis=0).view(1, 19, 8, 8)
     
 
 class HyperionDNN(nn.Module):
@@ -82,11 +85,6 @@ class HyperionDNN(nn.Module):
         self.lin3 = nn.Linear(155648, 1)
         self.tanh = nn.Tanh()
         self.tanh2 = nn.Tanh()
-
-    
-    @property
-    def device(self):
-        return next(self.parameters()).device
 
     def forward(self, x, **kwargs):
         x = self.conv1(x)

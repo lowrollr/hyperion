@@ -113,7 +113,7 @@ class MCST_Evaluator:
         legal_moves = list(board.legal_moves)
         for _, move in enumerate(legal_moves):
             board.push(move)
-            board_states.append(convert_to_nn_state(board, self.model.device))
+            board_states.append(convert_to_nn_state(board))
             board.pop()
             
         scores = self.get_nn_score(torch.stack(board_states), use_mini)
