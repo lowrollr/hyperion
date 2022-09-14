@@ -132,8 +132,7 @@ class MCST_Evaluator:
             return res
         else:
             index = torch.argmax(scores)
-            val = torch.max(scores)
-            res =  (val.item(), index.item(), legal_moves[index])
+            res =  (scores[index], index.item(), legal_moves[index])
             self.choose_time += time.time() - choose_time
             return res
         
