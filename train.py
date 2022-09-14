@@ -28,11 +28,11 @@ while True:
     if move is None:
         evals = evaluator.training_evals
         results = evaluator.training_results
+        optimizer.zero_grad()
         loss = torch.nn.functional.l1_loss(torch.cat(evals), torch.cat(results).unsqueeze(1).unsqueeze(1))
         loss.backward()
         print(loss)
-        optimizer.zero_grad()
-        evaluator = MCST_Evaluator(deepcopy(king))
+        
         board = chess.Board()
         torch.save(king.state_dict(), f"king_{game_count}.pth")
         game_count += 1
