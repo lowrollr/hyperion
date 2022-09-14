@@ -13,7 +13,6 @@ import time
 device = torch.device('cpu')
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
-    torch.backends.cudnn.benchmark = True
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
 else:
     torch.set_default_tensor_type(torch.FloatTensor)
