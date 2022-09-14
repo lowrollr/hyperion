@@ -12,6 +12,7 @@ import torch
 import time
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+torch.backends.cudnn.benchmark = True
 king = HyperionDNN().to(device)
 # king.load_state_dict(torch.load('./king_53.pth'))
 
