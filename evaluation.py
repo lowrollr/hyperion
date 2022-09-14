@@ -109,14 +109,15 @@ class MCST_Evaluator:
             return choices(moves, move_ps)[0]
 
     def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move]:
-        board_states = []
+        
         legal_moves = list(board.legal_moves)
-        for _, move in enumerate(legal_moves):
+        board_states = torch.empty((len(legal_moves), 1, 19, 8, 8))
+        
+        for i, move in enumerate(legal_moves):
             board.push(move)
-            board_states.append(convert_to_nn_state(board))
+            board_states[i] = convert_to_nn_state(board)
             board.pop()
-            
-        scores = self.get_nn_score(torch.stack(board_states), use_mini)
+        scores = self.get_nn_score(board_states, use_mini)
         if exploring:
             
             scores_list = [(legal_moves[i], scores[i]) for i in range(len(scores))]
