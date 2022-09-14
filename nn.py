@@ -64,7 +64,7 @@ def convert_to_nn_state(board: chess.Board, device):
     
     
     
-    return torch.from_numpy(np.stack((pawns, b_pawns, bishops, b_bishops, rooks, b_rooks, knights, b_knights, queens, b_queens, kings, b_kings, repeated_3, repeated_5, fifty_moves, wck, wcq, bck, bcq), axis=0), device=device).float()
+    return torch.tensor(np.stack((pawns, b_pawns, bishops, b_bishops, rooks, b_rooks, knights, b_knights, queens, b_queens, kings, b_kings, repeated_3, repeated_5, fifty_moves, wck, wcq, bck, bcq), axis=0), device=device).float().view(1, 19, 8, 8)
     
 
 class HyperionDNN(nn.Module):
