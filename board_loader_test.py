@@ -17,7 +17,7 @@ evaluator = MCST_Evaluator(king, device)
 board = chess.Board()
 time_start = time.time()
 for i in range(10):
-    evaluator.choose_move(board, False, False)
+    evaluator.choose_move(board, False, True)
     
 print('took', time.time() - time_start)
 print(evaluator.choose_time)

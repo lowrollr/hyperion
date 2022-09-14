@@ -131,8 +131,9 @@ class MCST_Evaluator:
         choose_time = time.time()
 
         if exploring:
-            scores_list = [(legal_moves[i], scores[i]) for i in range(len(scores))]
-            best = choices(scores_list, [i[1] for i in scores_list], k=1)[0]
+            scores_list = scores.detach().cpu().numpy()
+            scores_moves = list(zip(legal_moves, scores_list))
+            best = choices(scores_moves, scores_list, k=1)[0]
             res = (best[1], 0, best[0])
             self.choose_time += time.time() - choose_time
             return res
