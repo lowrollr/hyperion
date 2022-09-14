@@ -114,14 +114,15 @@ class MCST_Evaluator:
         
         legal_moves = list(board.legal_moves)
         start_load = time.time()
-        board_states = torch.empty((len(legal_moves), 1, 19, 8, 8))
+        board_states = []
         
         for i, move in enumerate(legal_moves):
             board.push(move)
-            board_states[i] = convert_to_nn_state(board)
+            board_states.append(convert_to_nn_state(board))
             board.pop()
+        input_tensor = torch.from_numpy(np.stack(board_states, axis=0))
         self.load_time += time.time() - start_load
-        scores = self.get_nn_score(board_states, use_mini)
+        scores = self.get_nn_score(input_tensor, use_mini)
         choose_time = time.time()
         if exploring:
             scores_list = [(legal_moves[i], scores[i]) for i in range(len(scores))]

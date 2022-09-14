@@ -16,7 +16,7 @@ king = HyperionDNN().to(device)
 evaluator = MCST_Evaluator(king)
 board = chess.Board()
 time_start = time.time()
-for i in range(10):
+for i in range(1):
     evaluator.choose_move(board, False, False)
 print('took', time.time() - time_start)
 
