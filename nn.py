@@ -1,3 +1,4 @@
+import time
 import xdrlib
 import numpy as np
 import chess
@@ -25,6 +26,7 @@ PIECE_ID_MAP = {
 def convert_to_nn_state(board: chess.Board):
     # 12 piece planes (6 piece types per player)
     data_tensor = torch.zeros(19,8,8)
+    time_start = time.time()
     if board.is_fivefold_repetition():
         data_tensor[12] += 1
     if board.is_fifty_moves():
@@ -39,10 +41,13 @@ def convert_to_nn_state(board: chess.Board):
         data_tensor[17] += 1
     if board.is_repetition():
         data_tensor += 1
+    print("fill_conds", time.time() - time_start)
+    time_start = time.time()
     for sq, piece in board.piece_map().items():
         v = PIECE_ID_MAP[(piece.piece_type, piece.color)]
         r, c = sq // 8, sq % 8
         data_tensor[v][r][c] = 1.0
+    print("fill_pieces", time.time() - time_start)
     return data_tensor.unsqueeze(1)
     
 

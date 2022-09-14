@@ -13,7 +13,7 @@ torch.set_default_dtype(torch.float)
 
 board = chess.Board()
 time_start = time.time()
-for i in range(1000):
+for i in range(10):
     convert_to_nn_state(board)
 print('took', time.time() - time_start)
 
