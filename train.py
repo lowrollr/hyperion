@@ -40,6 +40,7 @@ def mp_train():
     else:
         torch.set_default_tensor_type(torch.FloatTensor)
     torch.set_default_dtype(torch.float)
+    torch.multiprocessing.set_start_method('spawn')
 
 
     king = HyperionDNN().to(device)
@@ -53,7 +54,7 @@ def mp_train():
     procs = []
     for r in range(num_procs):
         p = mp.Process(target=train, args=(evaluator, optimizer))
-        p.start()
+        mp.start_
         procs.append(p)
     for p in procs:
         p.join()
