@@ -49,12 +49,12 @@ class HyperionDNN(nn.Module):
     
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv3d(1, 256, (1,3,3))
+        self.conv1 = nn.Conv3d(1, 256, (1,3,3), bias=False)
         self.bn1 = nn.BatchNorm3d(256)
         self.bn2 = nn.BatchNorm3d(512)
         self.bn3 = nn.BatchNorm3d(512)
-        self.conv2 = nn.Conv3d(256, 512, (1,3,3))
-        self.conv3 = nn.Conv3d(512, 512, (1,4,4))
+        self.conv2 = nn.Conv3d(256, 512, (1,3,3), bias=False)
+        self.conv3 = nn.Conv3d(512, 512, (1,4,4), bias=False)
         self.flatten = nn.Flatten(1,4)
         self.flatten2 = nn.Flatten(1,4)
         self.lin1 = nn.Linear(9728, 9728)
@@ -83,6 +83,7 @@ class HyperionDNN(nn.Module):
             x = self.lin1(x)
             x = nn.functional.relu(x)
             x = self.lin2(x)
+            x = nn.functional.relu(x)
             x = self.tanh(x)
         return x
     

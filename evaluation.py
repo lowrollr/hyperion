@@ -59,8 +59,6 @@ class MCST_Evaluator:
         self.ucb_scores = self.ucb_scores['c'][move]
 
     def explore(self, board: chess.Board, ucb_scores) -> Tuple[float, chess.Move]:
-        
-
         term_state = self.terminal_state(board)
         if term_state is not None:
             return (term_state, None)
@@ -120,10 +118,11 @@ class MCST_Evaluator:
             return (0.0, 0, choice(legal_moves))
 
 
-        for _, move in enumerate(legal_moves):
+        for move in legal_moves:
             board.push(move)
             board_states.append(convert_to_nn_state(board))
             board.pop()
+
         input = np.stack(board_states, axis=0)
         input_tensor = torch.from_numpy(input).to(self.device)
         self.load_time += time.time() - start_load
@@ -148,13 +147,13 @@ class MCST_Evaluator:
         if term_state is not None:
             return (term_state, None)
 
-        engine_eval, _, move = self.choose_move(board, not first, first)
+        engine_eval, _, move = self.choose_move(board, not first, False)
         board.push(move)
         result, _ = self.playout(board)
         board.pop()
         if first:
             self.training_evals.append(engine_eval)
-            self.training_results.append(torch.tensor([result]))
+            self.training_results.append(result)
         return result, move
 
  
