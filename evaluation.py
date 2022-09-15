@@ -169,7 +169,9 @@ class MCST_Evaluator:
         
         s, _, m = self.choose_expansion(board, self.ucb_scores, allow_null=False, exploring=False)
         if m:
+            start_walk_time = time.time()
             self.walk_tree(m.uci())
+            print("Spent ", time.time() - start_walk_time, "walking tree")
             board.push(m)
         total_time = time.time() - start_time
         other_time = total_time - (self.pred_time + self.choose_time + self.load_time)
