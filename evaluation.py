@@ -23,6 +23,7 @@ class MCST_Evaluator:
         self.pred_time = 0.0
         self.load_time = 0.0
         self.choose_time = 0.0
+        self.expanding_time = 0.0
 
     def reset(self):
         self.ucb_scores = dict()
@@ -83,6 +84,7 @@ class MCST_Evaluator:
         
 
     def choose_expansion(self, board: chess.Board, ucb_scores, allow_null=True, exploring=True) -> Tuple[float, int, chess.Move]:
+        start_time = time.time()
         best_move = (float('-inf'), 0, None)
         moves = []
         move_ps = []
@@ -103,6 +105,7 @@ class MCST_Evaluator:
                 moves.append((score, i, move))
                 move_ps.append(score)
 
+        self.expanding_time += (time.time() - start_time)
         if not exploring:        
             return best_move
         else:
@@ -173,6 +176,7 @@ class MCST_Evaluator:
         print("Spent ", self.pred_time, "predicting")
         print("Spent ", self.load_time, "loading data")
         print("Spent ", self.choose_time, "choosing")
+        print("Spent", self.expanding_time, "expanding")
         print("Spent", other_time, "doing other things")
             
         return (m, s)
