@@ -109,9 +109,8 @@ class MCST_Evaluator:
             return choices(moves, move_ps)[0]
 
     def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move]:
-        
-        legal_moves = list(board.legal_moves)
         start_load = time.time()
+        legal_moves = list(board.legal_moves)
         board_states = []
 
         if use_mini:
@@ -138,7 +137,7 @@ class MCST_Evaluator:
             return res
         else:
             index = torch.argmax(scores)
-            res =  (scores[index].item(), index.item(), legal_moves[index])
+            res =  (scores[index].item, index.item(), legal_moves[index])
             self.choose_time += time.time() - choose_time
             return res
         
