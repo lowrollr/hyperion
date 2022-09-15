@@ -1,11 +1,7 @@
-from copy import copy, deepcopy
-from random import choice, choices, randint, sample, shuffle
-import time
-from tracemalloc import start
+
+from random import choice, choices
 from typing import Optional, Tuple
 import chess
-import xxhash
-from keras import Sequential
 from nn import convert_to_nn_state
 import numpy as np
 import torch
@@ -13,17 +9,13 @@ import torch.nn as nn
 
 
 class MCST_Evaluator:
-    def __init__(self, model: Sequential, device, training=True):
+    def __init__(self, model, device, training=True):
         self.model = model
         self.device = device
         self.ucb_scores = dict()
         self.loss_fn = nn.NLLLoss()
         self.training_evals = []
         self.training_results = []
-        self.pred_time = 0.0
-        self.load_time = 0.0
-        self.choose_time = 0.0
-        self.expanding_time = 0.0
 
     def reset(self):
         self.ucb_scores = dict()
@@ -49,10 +41,7 @@ class MCST_Evaluator:
   
 
     def get_nn_score(self, board_states: torch.Tensor, use_mini: bool):
-        start_time = time.time()
-        
         res = self.model(board_states, mini=use_mini)
-        self.pred_time += time.time() - start_time
         return res
     
     def walk_tree(self, move: str):
@@ -84,7 +73,6 @@ class MCST_Evaluator:
         
 
     def choose_expansion(self, board: chess.Board, ucb_scores, allow_null=True, exploring=True) -> Tuple[float, int, chess.Move]:
-        start_time = time.time()
         best_move = (float('-inf'), 0, None)
         moves = []
         move_ps = []
@@ -105,14 +93,12 @@ class MCST_Evaluator:
                 moves.append((score, i, move))
                 move_ps.append(score)
 
-        self.expanding_time += (time.time() - start_time)
         if not exploring:        
             return best_move
         else:
             return choices(moves, move_ps)[0]
 
     def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move]:
-        start_load = time.time()
         legal_moves = list(board.legal_moves)
         board_states = []
 
@@ -127,21 +113,17 @@ class MCST_Evaluator:
 
         input = np.stack(board_states, axis=0)
         input_tensor = torch.from_numpy(input).to(self.device)
-        self.load_time += time.time() - start_load
         scores = self.get_nn_score(input_tensor, use_mini)
-        choose_time = time.time()
 
         if exploring:
             scores_list = scores.detach().cpu().numpy()
             scores_moves = list(zip(legal_moves, scores_list))
             best = choices(scores_moves, scores_list, k=1)[0]
             res = (best[1], 0, best[0])
-            self.choose_time += time.time() - choose_time
             return res
         else:
             index = torch.argmax(scores)
             res =  (scores[index].item, index.item(), legal_moves[index])
-            self.choose_time += time.time() - choose_time
             return res
         
     def playout(self, board: chess.Board, first=False) -> int:
@@ -160,25 +142,12 @@ class MCST_Evaluator:
 
  
     def make_best_move(self, board: chess.Board, iterations=200) -> Tuple[chess.Move, float]:
-        self.pred_time = 0.0
-        self.choose_time = 0.0
-        self.load_time = 0.0
-        start_time = time.time()
         for i in range(iterations):
             self.explore(board, self.ucb_scores)
         
         s, _, m = self.choose_expansion(board, self.ucb_scores, allow_null=False, exploring=False)
         if m:
-            start_walk_time = time.time()
             self.walk_tree(m.uci())
-            print("Spent ", time.time() - start_walk_time, "walking tree")
             board.push(m)
-        total_time = time.time() - start_time
-        other_time = total_time - (self.pred_time + self.choose_time + self.load_time)
-        print("Spent ", self.pred_time, "predicting")
-        print("Spent ", self.load_time, "loading data")
-        print("Spent ", self.choose_time, "choosing")
-        print("Spent", self.expanding_time, "expanding")
-        print("Spent", other_time, "doing other things")
-            
+        
         return (m, s)
