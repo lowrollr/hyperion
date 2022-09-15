@@ -52,9 +52,9 @@ def mp_train():
     num_procs = mp.cpu_count() - 1
 
     procs = []
-    for r in range(num_procs):
+    for _ in range(num_procs):
         p = mp.Process(target=train, args=(evaluator, optimizer))
-        mp.start_
+        p.start()
         procs.append(p)
     for p in procs:
         p.join()
