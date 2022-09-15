@@ -6,11 +6,12 @@ from torch.optim import sgd
 import chess
 import torch
 import time
+import os
 
 
 
 
-def train(evaluator, optimizer):
+def train(evaluator, optimizer, p_id):
     evals = []
     results = []
     board = chess.Board()
@@ -22,33 +23,24 @@ def train(evaluator, optimizer):
             evals.extend(evaluator.training_evals)
             results.extend(evaluator.training_results)
             board = chess.Board()
+            print(f'simulated {len(evals)} positions')
         else:
             print(move.uci(), eval, time.time() - start_time)
             print(board)
-
+        
     optimizer.zero_grad()
     loss = torch.nn.functional.l1_loss(torch.cat(evals), torch.cat(results).unsqueeze(1).unsqueeze(1))
     loss.backward()
     return loss.item()
 
-def mp_train():
-    torch.backends.cudnn.benchmark = True
-    device = torch.device('cpu')
-    if torch.cuda.is_available():
-        device = torch.device("cuda:0")
-        torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    else:
-        torch.set_default_tensor_type(torch.FloatTensor)
-    torch.set_default_dtype(torch.float)
-    torch.multiprocessing.set_start_method('spawn')
+def mp_train(devices):
+    model = HyperionDNN().to(devices[0])
+    model.share_memory()
+    if os.path.exists('./saved_models/model_best.pth'):
+        model.load_state_dict(torch.load('./model_best.pth'))
 
-
-    king = HyperionDNN().to(device)
-    king.share_memory()
-    # king.load_state_dict(torch.load('./king_53.pth'))∂
-
-    optimizer = torch.optim.Adam(king.parameters(), lr=1e-3)
-    evaluator = MCST_Evaluator(king, device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    evaluator = MCST_Evaluator(model, devices[0])
     num_procs = mp.cpu_count() - 1
 
     procs = []
@@ -58,3 +50,6 @@ def mp_train():
         procs.append(p)
     for p in procs:
         p.join()
+    # save the model
+    torch.save(model, './saved_models/model_last.pth')
+    return model

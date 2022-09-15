@@ -16,6 +16,7 @@ class MCST_Evaluator:
         self.loss_fn = nn.NLLLoss()
         self.training_evals = []
         self.training_results = []
+        self.training = training
 
     def reset(self):
         self.ucb_scores = dict()
@@ -60,7 +61,7 @@ class MCST_Evaluator:
             ucb_scores['c'] = {move.uci(): dict()}
             return (result, move)
 
-        _, _, move = self.choose_expansion(board, ucb_scores)
+        _, _, move = self.choose_expansion(board, ucb_scores, not self.training)
         uci = move.uci()
         if not ucb_scores['c'].get(uci):
             ucb_scores['c'][uci] = {}
@@ -131,7 +132,7 @@ class MCST_Evaluator:
         if term_state is not None:
             return (term_state, None)
 
-        engine_eval, _, move = self.choose_move(board, not first, False)
+        engine_eval, _, move = self.choose_move(board, not first, not self.training)
         board.push(move)
         result, _ = self.playout(board)
         board.pop()
