@@ -6,10 +6,11 @@ import torch
 if __name__ == '__main__':
 
     torch.backends.cudnn.benchmark = True
-    torch.cuda.set_per_process_memory_fraction(1)
+    
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device("cuda:0")
+        torch.cuda.set_per_process_memory_fraction(1, device=device)
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
     else:
         torch.set_default_tensor_type(torch.FloatTensor)
