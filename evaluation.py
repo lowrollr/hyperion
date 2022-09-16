@@ -138,7 +138,7 @@ class MCST_Evaluator:
         board.pop()
         if first:
             self.training_evals.append(engine_eval)
-            self.training_results.append([result])
+            self.training_results.append(result)
         return result, move
 
  
