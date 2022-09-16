@@ -6,11 +6,12 @@ from nn import convert_to_nn_state
 import numpy as np
 import torch
 import torch.nn as nn
+from copy import deepcopy
 
 
 class MCST_Evaluator:
     def __init__(self, model, device, training=True):
-        self.model = model
+        self.model = deepcopy(model)
         self.device = device
         self.ucb_scores = dict()
         self.loss_fn = nn.NLLLoss()

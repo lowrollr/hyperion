@@ -18,7 +18,7 @@ def train(evaluator, optimizer, p_id):
     while len(evals) < 20:
         start_time = time.time()
         with torch.no_grad():
-            move, eval = evaluator.make_best_move(board, 10)
+            move, eval = evaluator.make_best_move(board, 2)
         if move is None:
             evals.extend(evaluator.training_evals)
             results.extend(evaluator.training_results)
