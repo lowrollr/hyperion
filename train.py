@@ -17,8 +17,8 @@ def train(evaluator, optimizer, p_id):
     board = chess.Board()
     while len(evals) < 20:
         start_time = time.time()
-        # with torch.no_grad():
-        move, eval = evaluator.make_best_move(board, 1)
+        with torch.no_grad():
+            move, eval = evaluator.make_best_move(board, 1)
         if move is None:
             evals.extend(evaluator.training_evals)
             results.extend(evaluator.training_results)
@@ -29,7 +29,7 @@ def train(evaluator, optimizer, p_id):
             print(board)
         
     optimizer.zero_grad()
-    loss = torch.nn.functional.l1_loss(torch.stack(evals), torch.tensor(results))
+    loss = torch.nn.functional.l1_loss(torch.cat(evals), torch.tensor(results))
     loss.backward()
     return loss.item()
 
