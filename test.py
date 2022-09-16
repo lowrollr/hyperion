@@ -56,4 +56,4 @@ def mp_selfplay(candidate_model, devices, total_games=100):
         for p in procs:
             p.join()
     else:
-        torch.save(candidate_model, './saved_models/model_best.pth')
+        torch.save(candidate_model.state_dict(), './saved_models/model_best.pth')

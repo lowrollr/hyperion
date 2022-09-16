@@ -117,28 +117,28 @@ class MCST_Evaluator:
         scores = self.get_nn_score(input_tensor, use_mini)
 
         if exploring:
-            scores_list = scores.detach().cpu().numpy()
-            scores_moves = list(zip(legal_moves, scores_list))
+            scores_list = scores.clone().detach().cpu().numpy()
+            scores_moves = list(enumerate(zip(legal_moves, scores_list)))
             best = choices(scores_moves, scores_list, k=1)[0]
-            res = (best[1], 0, best[0])
+            res = (scores[best[0]], best[0], best[1])
             return res
         else:
-            index = torch.argmax(scores)
-            res =  (scores[index].item, index.item(), legal_moves[index])
+            index = torch.argmax(scores).item()
+            res =  (scores[index], index, legal_moves[index])
             return res
         
     def playout(self, board: chess.Board, first=False) -> int:
         term_state = self.terminal_state(board)
         if term_state is not None:
             return (term_state, None)
-
+        
         engine_eval, _, move = self.choose_move(board, not first, not self.training)
         board.push(move)
         result, _ = self.playout(board)
         board.pop()
         if first:
             self.training_evals.append(engine_eval)
-            self.training_results.append(result)
+            self.training_results.append([result])
         return result, move
 
  

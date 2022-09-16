@@ -15,10 +15,10 @@ def train(evaluator, optimizer, p_id):
     evals = []
     results = []
     board = chess.Board()
-    while len(evals) < 10000:
+    while len(evals) < 20:
         start_time = time.time()
-        with torch.no_grad():
-            move, eval = evaluator.make_best_move(board)
+        # with torch.no_grad():
+        move, eval = evaluator.make_best_move(board, 1)
         if move is None:
             evals.extend(evaluator.training_evals)
             results.extend(evaluator.training_results)
@@ -29,7 +29,7 @@ def train(evaluator, optimizer, p_id):
             print(board)
         
     optimizer.zero_grad()
-    loss = torch.nn.functional.l1_loss(torch.cat(evals), torch.cat(results).unsqueeze(1).unsqueeze(1))
+    loss = torch.nn.functional.l1_loss(torch.stack(evals), torch.tensor(results))
     loss.backward()
     return loss.item()
 
@@ -37,19 +37,19 @@ def mp_train(devices):
     model = HyperionDNN().to(devices[0])
     model.share_memory()
     if os.path.exists('./saved_models/model_best.pth'):
-        model.load_state_dict(torch.load('./model_best.pth'))
+        model.load_state_dict(torch.load('./saved_models/model_best.pth'))
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     evaluator = MCST_Evaluator(model, devices[0])
     num_procs = mp.cpu_count() - 1
 
     procs = []
-    for _ in range(num_procs):
-        p = mp.Process(target=train, args=(evaluator, optimizer))
+    for i in range(num_procs):
+        p = mp.Process(target=train, args=(evaluator, optimizer, i,))
         p.start()
         procs.append(p)
     for p in procs:
         p.join()
     # save the model
-    torch.save(model, './saved_models/model_last.pth')
+    torch.save(model.state_dict(), './saved_models/model_last.pth')
     return model
