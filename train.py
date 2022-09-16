@@ -48,13 +48,14 @@ def mp_train(devices):
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     num_procs = 2
 
-    procs = []
-    for i in range(num_procs):
-        p = mp.Process(target=train, args=(model, optimizer, devices[0], i))
-        p.start()
-        procs.append(p)
-    for p in procs:
-        p.join()
+    train(model, optimizer, devices[0], 0)
+    # procs = []
+    # for i in range(num_procs):
+    #     p = mp.Process(target=train, args=(model, optimizer, devices[0], i))
+    #     p.start()
+    #     procs.append(p)
+    # for p in procs:
+    #     p.join()
     # save the model
     torch.save(model.state_dict(), './saved_models/model_last.pth')
     return model
