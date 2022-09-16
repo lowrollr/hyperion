@@ -47,7 +47,7 @@ def mp_train(devices):
         model.load_state_dict(torch.load('./saved_models/model_best.pth'))
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    num_procs = mp.cpu_count() - 1
+    num_procs = 2
 
     procs = []
     for i in range(num_procs):
