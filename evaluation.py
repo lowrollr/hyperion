@@ -6,7 +6,6 @@ from nn import convert_to_nn_state
 import numpy as np
 import torch
 import torch.nn as nn
-from copy import deepcopy
 
 
 class MCST_Evaluator:

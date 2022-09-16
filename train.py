@@ -1,4 +1,5 @@
 # routine to continuously train and update the neur
+from copy import deepcopy
 import torch.multiprocessing as mp
 from evaluation import MCST_Evaluator
 from nn import HyperionDNN
@@ -11,13 +12,15 @@ import os
 
 
 
-def train(evaluator, optimizer, p_id):
+def train(model, optimizer, device, pid):
+    evaluator = MCST_Evaluator(deepcopy(model), device, training=True)
     evals = []
     results = []
     board = chess.Board()
     while len(evals) < 20:
         start_time = time.time()
-        move, eval = evaluator.make_best_move(board, 2)
+        with torch.no_grad():
+            move, eval = evaluator.make_best_move(board, 2)
         if move is None:
             evals.extend(evaluator.training_evals)
             results.extend(evaluator.training_results)
@@ -42,12 +45,11 @@ def mp_train(devices):
         model.load_state_dict(torch.load('./saved_models/model_best.pth'))
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    evaluator = MCST_Evaluator(model, devices[0])
     num_procs = mp.cpu_count() - 1
 
     procs = []
     for i in range(num_procs):
-        p = mp.Process(target=train, args=(evaluator, optimizer, i,))
+        p = mp.Process(target=train, args=(model, optimizer, devices[0], i))
         p.start()
         procs.append(p)
     for p in procs:
