@@ -29,7 +29,10 @@ def train(evaluator, optimizer, p_id):
             print(board)
         
     optimizer.zero_grad()
-    loss = torch.nn.functional.l1_loss(torch.cat(evals), torch.tensor(results).to(evaluator.device))
+    t_evals = torch.cat(evals)
+    t_results = torch.tensor(results).to(evaluator.device)
+    print(t_evals.shape, t_results.shape)
+    loss = torch.nn.functional.l1_loss(t_evals, t_results)
     loss.backward()
     return loss.item()
 
