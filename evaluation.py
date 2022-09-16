@@ -119,7 +119,7 @@ class MCST_Evaluator:
 
         if exploring:
             scores_list = scores.clone().cpu().numpy()
-            scores_moves = list(enumerate(zip(legal_moves, scores_list)))
+            scores_moves = list(enumerate(legal_moves))
             best = choices(scores_moves, scores_list, k=1)[0]
             res = (scores[best[0]], best[0], best[1])
             return res
