@@ -28,12 +28,12 @@ def train(evaluator, optimizer, p_id):
             print(move.uci(), eval, time.time() - start_time)
             print(board)
         
-    optimizer.zero_grad()
-    print(evals)
+    
     t_evals = torch.cat(evals)
     t_results = torch.tensor(results).to(evaluator.device)
     loss = torch.nn.functional.l1_loss(t_evals, t_results)
     loss.backward()
+    optimizer.zero_grad()
     return loss.item()
 
 def mp_train(devices):
