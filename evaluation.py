@@ -118,7 +118,7 @@ class MCST_Evaluator:
         scores = self.get_nn_score(input_tensor, use_mini)
 
         if exploring:
-            scores_list = scores.clone().detach().cpu().numpy()
+            scores_list = scores.clone().cpu().numpy()
             scores_moves = list(enumerate(zip(legal_moves, scores_list)))
             best = choices(scores_moves, scores_list, k=1)[0]
             res = (scores[best[0]], best[0], best[1])
@@ -133,7 +133,7 @@ class MCST_Evaluator:
         if term_state is not None:
             return (term_state, None)
         
-        engine_eval, _, move = self.choose_move(board, not first, False)
+        engine_eval, _, move = self.choose_move(board, not first, self.training)
         board.push(move)
         result, _ = self.playout(board)
         board.pop()
