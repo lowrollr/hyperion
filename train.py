@@ -29,6 +29,7 @@ def train(evaluator, optimizer, p_id):
             print(board)
         
     optimizer.zero_grad()
+    print(evals)
     t_evals = torch.cat(evals)
     t_results = torch.tensor(results).to(evaluator.device)
     loss = torch.nn.functional.l1_loss(t_evals, t_results)
