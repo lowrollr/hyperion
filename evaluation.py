@@ -11,7 +11,7 @@ from copy import deepcopy
 
 class MCST_Evaluator:
     def __init__(self, model, device, training=True):
-        self.model = deepcopy(model)
+        self.model = model
         self.device = device
         self.ucb_scores = dict()
         self.loss_fn = nn.NLLLoss()
@@ -133,7 +133,7 @@ class MCST_Evaluator:
         if term_state is not None:
             return (term_state, None)
         
-        engine_eval, _, move = self.choose_move(board, not first, not self.training)
+        engine_eval, _, move = self.choose_move(board, not first, False)
         board.push(move)
         result, _ = self.playout(board)
         board.pop()
