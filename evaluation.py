@@ -118,9 +118,8 @@ class MCST_Evaluator:
         scores = self.get_nn_score(input_tensor, use_mini)
 
         if exploring:
-            scores_list = scores.clone().cpu().numpy()
             scores_moves = list(enumerate(legal_moves))
-            best = choices(scores_moves, scores_list, k=1)[0]
+            best = choices(scores_moves, scores, k=1)[0]
             res = (scores[best[0]], best[0], best[1])
             return res
         else:
