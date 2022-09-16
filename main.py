@@ -10,7 +10,6 @@ if __name__ == '__main__':
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device("cuda:0")
-        torch.cuda.set_per_process_memory_fraction(0.125, device=device)
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
     else:
         torch.set_default_tensor_type(torch.FloatTensor)
