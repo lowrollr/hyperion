@@ -6,6 +6,7 @@ import torch
 if __name__ == '__main__':
 
     torch.backends.cudnn.benchmark = True
+    torch.cuda.set_per_process_memory_fraction(1)
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device("cuda:0")
