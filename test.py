@@ -46,7 +46,7 @@ def mp_selfplay(candidate_model, devices, total_games=100):
     best_model = HyperionDNN().to(devices[0])
     if os.path.exists('./saved_models/model_best.pth'):
         best_model.load_state_dict('./saved_models/model_best.pth')
-        num_procs = 2
+        num_procs = 4
         procs = []
         for _ in range(num_procs):
             p = mp.Process(target=selfplay, args=(candidate_model, best_model, devices[0], devices[0]))
