@@ -53,7 +53,7 @@ class MCST_Evaluator:
 
     def train_on_samples(self):
         self.trainer.optimize_model(
-            torch.cat(self.training_boards).to(self.device), 
+            torch.from_numpy(np.cat(self.training_boards)).to(self.device), 
             torch.tensor(self.training_results).to(self.device)
         )
   
