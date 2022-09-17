@@ -28,6 +28,7 @@ class MCST_Evaluator:
         else:
             self.trainer = None
             self.training = False
+        print('initialized!')
 
     def reset(self):
         self.ucb_scores = dict()
