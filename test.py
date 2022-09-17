@@ -5,15 +5,14 @@ import torch.multiprocessing as mp
 from evaluation import MCST_Evaluator
 from nn import HyperionDNN
 
-def selfplay(model1, model2, num_games=1):
-    
+def selfplay(model1, model2, device1, device2, num_games=1):
     game_num = 0
     while game_num < num_games:
         player1, player2 = model1, model2
         if game_num % 2:
             player1, player2 = model2, model1
-        eval1 = MCST_Evaluator(player1, player1.device, False)
-        eval2 = MCST_Evaluator(player2, player2.device, False)
+        eval1 = MCST_Evaluator(player1, device1, False)
+        eval2 = MCST_Evaluator(player2, device2, False)
         p1_wins = 0
         p2_wins = 0
         draws = 0
@@ -50,7 +49,7 @@ def mp_selfplay(candidate_model, devices, total_games=100):
         num_procs = mp.cpu_count() - 1
         procs = []
         for _ in range(num_procs):
-            p = mp.Process(target=selfplay, args=(candidate_model, best_model))
+            p = mp.Process(target=selfplay, args=(candidate_model, best_model, devices[0], devices[0]))
             p.start()
             procs.append(p)
         for p in procs:
