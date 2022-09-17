@@ -11,8 +11,8 @@ def selfplay(model1, model2, device1, device2, num_games=1):
         player1, player2 = model1, model2
         if game_num % 2:
             player1, player2 = model2, model1
-        eval1 = MCST_Evaluator(player1, device1, False)
-        eval2 = MCST_Evaluator(player2, device2, False)
+        eval1 = MCST_Evaluator(player1, device1, None, False)
+        eval2 = MCST_Evaluator(player2, device2, None, False)
         p1_wins = 0
         p2_wins = 0
         draws = 0
@@ -46,7 +46,7 @@ def mp_selfplay(candidate_model, devices, total_games=100):
     best_model = HyperionDNN().to(devices[0])
     if os.path.exists('./saved_models/model_best.pth'):
         best_model = torch.load('./saved_models/model_best.pth')
-        num_procs = mp.cpu_count() - 1
+        num_procs = 2
         procs = []
         for _ in range(num_procs):
             p = mp.Process(target=selfplay, args=(candidate_model, best_model, devices[0], devices[0]))

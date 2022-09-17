@@ -1,6 +1,7 @@
 
 from copy import deepcopy
 from random import choice, choices
+from selectors import EpollSelector
 from typing import Optional, Tuple
 import chess
 from nn import convert_to_nn_state
@@ -12,8 +13,11 @@ from trainer import MPTrainer
 
 
 class MCST_Evaluator:
-    def __init__(self, model, device, optimizer, training = None, training_batch_size=20):
-        self.local_model = deepcopy(model)
+    def __init__(self, model, device, optimizer, training = True, training_batch_size=20):
+        if training:
+            self.local_model = deepcopy(model)
+        else:
+            self.local_model = model
         self.global_model = model
         self.device = device
         self.ucb_scores = dict()
@@ -159,7 +163,7 @@ class MCST_Evaluator:
             self.model_runs += 1
             self.training_boards.append(training_board)
             self.training_results.append(result)
-            if self.model_runs >= self.batch_size:
+            if self.model_runs >= self.batch_size and self.training:
                 self.train_on_samples()
                 self.training_boards = []
                 self.training_results = []
