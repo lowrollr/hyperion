@@ -12,13 +12,13 @@ from trainer import MPTrainer
 
 
 class MCST_Evaluator:
-    def __init__(self, model, device, optimizer, training = None, training_batch_size=100):
+    def __init__(self, model, device, optimizer, training = None, training_batch_size=20):
         
         self.local_model = deepcopy(model)
         self.global_model = model
         self.device = device
         self.ucb_scores = dict()
-        self.training_evals = []
+        self.training_boards = []
         self.training_results = []
         self.batch_size = training_batch_size
         self.model_runs = 0
@@ -52,7 +52,7 @@ class MCST_Evaluator:
 
     def train_on_samples(self):
         self.trainer.optimize_model(
-            torch.cat(self.training_evals), 
+            torch.cat(self.training_boards).to(self.device), 
             torch.tensor(self.training_results).to(self.device)
         )
   
@@ -115,12 +115,12 @@ class MCST_Evaluator:
         else:
             return choices(moves, move_ps)[0]
 
-    def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move, int]:
+    def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move, np.ndarray]:
         legal_moves = list(board.legal_moves)
         board_states = []
 
         if use_mini:
-            return (0.0, 0, choice(legal_moves), 0)
+            return (0.0, 0, choice(legal_moves), None)
 
 
         for move in legal_moves:
@@ -130,16 +130,18 @@ class MCST_Evaluator:
 
         input = np.stack(board_states, axis=0)
         input_tensor = torch.from_numpy(input).to(self.device)
-        scores = self.get_nn_score(input_tensor, use_mini)
+        with torch.no_grad():
+            scores = self.get_nn_score(input_tensor, use_mini)
 
         if exploring:
             scores_moves = list(enumerate(legal_moves))
             best = choices(scores_moves, scores, k=1)[0]
-            res = (scores[best[0]], best[0], best[1], len(legal_moves))
+            index = best[0]
+            res = (scores[best[0]], index, best[1], input[index])
             return res
         else:
             index = torch.argmax(scores).item()
-            res =  (scores[index], index, legal_moves[index], len(legal_moves))
+            res =  (scores[index], index, legal_moves[index], input[index])
             return res
         
     def playout(self, board: chess.Board, first=False) -> int:
@@ -147,20 +149,19 @@ class MCST_Evaluator:
         if term_state is not None:
             return (term_state, None)
         
-        engine_eval, _, move, batch_size = self.choose_move(board, not first, self.training)
+        engine_eval, _, move, training_board = self.choose_move(board, not first, self.training)
 
         board.push(move)
         result, _ = self.playout(board)
         board.pop()
 
-        if batch_size:
-            print(batch_size)
-            self.model_runs += batch_size
-            self.training_evals.append(engine_eval)
+        if training_board is not None:
+            self.model_runs += 1
+            self.training_boards.append(training_board)
             self.training_results.append(result)
             if self.model_runs >= self.batch_size:
                 self.train_on_samples()
-                self.training_evals = []
+                self.training_boards = []
                 self.training_results = []
                 self.model_runs = 0
         return result, move

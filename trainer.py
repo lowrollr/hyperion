@@ -5,8 +5,9 @@ class MPTrainer:
         self.loss_fn = loss_fn
         self.optimizer = optimizer
 
-    def optimize_model(self, preds, labels):
-        loss = self.loss_fn(preds, labels)
+    def optimize_model(self, boards, labels):
+        grad_preds = self.local_model(boards)
+        loss = self.loss_fn(grad_preds, labels)
         self.optimizer.zero_grad()
         loss.backward()
         for lp, gp in zip(self.local_model.parameters(), self.global_model.parameters()):
