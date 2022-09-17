@@ -36,7 +36,7 @@ def mp_train(devices):
         model.load_state_dict(torch.load('./saved_models/model_best.pth'))
 
     optimizer = SharedAdam(model.parameters(), lr=1e-3)
-    num_procs = mp.cpu_count() - 1
+    num_procs = mp.cpu_count() // 2
 
     device = devices[0]
     # train(model, optimizer, devices[0], 0)
