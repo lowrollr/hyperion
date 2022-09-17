@@ -12,7 +12,7 @@ from trainer import MPTrainer
 
 
 class MCST_Evaluator:
-    def __init__(self, model, device, optimizer, training = None, training_batch_size=100):
+    def __init__(self, model, device, optimizer, training = None, training_batch_size=10000):
         
         self.local_model = deepcopy(model)
         self.global_model = model
@@ -53,7 +53,7 @@ class MCST_Evaluator:
     def train_on_samples(self):
         self.trainer.optimize_model(
             torch.cat(self.training_evals), 
-            torch.tensor(self.training_results).unsqueeze(0).to(self.device)
+            torch.tensor(self.training_results).to(self.device)
         )
   
 

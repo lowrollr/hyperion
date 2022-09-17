@@ -15,15 +15,19 @@ import os
 
 
 
-def self_play(model, device, optimizer, training_games=1, eval_depth=200):
+def self_play(model, device, optimizer, p_id, training_games=1, eval_depth=200):
     evaluator = MCST_Evaluator(model, device, training=True, optimizer=optimizer, training_batch_size=40)
     board = chess.Board()
     games_played = 0
     while games_played < training_games:
+        start_time = time.time()
         move, _ = evaluator.make_best_move(board, eval_depth)
         if move is None:
             board = chess.Board()
             games_played += 1
+        else:
+            print('p_id:', move.uci(), eval, time.time() - start_time)
+            print(board)
 
 def mp_train(devices):
     model = HyperionDNN().to(devices[0])
@@ -38,7 +42,7 @@ def mp_train(devices):
     # train(model, optimizer, devices[0], 0)
     procs = []
     for i in range(num_procs):
-        p = mp.Process(target=self_play, args=(model, device, optimizer,))
+        p = mp.Process(target=self_play, args=(model, device, optimizer, i))
         p.start()
         procs.append(p)
     for p in procs:
