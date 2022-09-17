@@ -45,7 +45,7 @@ def mp_selfplay(candidate_model, devices, total_games=100):
     # load best model
     best_model = HyperionDNN().to(devices[0])
     if os.path.exists('./saved_models/model_best.pth'):
-        best_model = torch.load('./saved_models/model_best.pth')
+        best_model.load_state_dict('./saved_models/model_best.pth')
         num_procs = 2
         procs = []
         for _ in range(num_procs):
