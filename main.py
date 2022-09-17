@@ -18,5 +18,3 @@ if __name__ == '__main__':
 
     trained_model = mp_train([device])
     mp_selfplay(trained_model, [device])
-
-        
