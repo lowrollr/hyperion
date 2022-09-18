@@ -11,7 +11,7 @@ if __name__ == '__main__':
     parser.add_argument('training_depth', type=int, default=200)
     parser.add_argument('training_processes', type=int, default=2)
     parser.add_argument('testing_processes', type=int, default=4)
-    parser.add_argument('num_gpus')
+    parser.add_argument('num_gpus', type=int, default=1)
     args = parser.parse_args()
     torch.backends.cudnn.benchmark = True
     
