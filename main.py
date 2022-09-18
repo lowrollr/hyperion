@@ -5,13 +5,13 @@ import argparse
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Hyperion Chess Engine Training')
-    parser.add_argument('epoch_games', type=int, default=100)
-    parser.add_argument('testing_games', type=int, default=100)
-    parser.add_argument('testing_depth', type=int, default=200)
-    parser.add_argument('training_depth', type=int, default=200)
-    parser.add_argument('training_processes', type=int, default=2)
-    parser.add_argument('testing_processes', type=int, default=4)
-    parser.add_argument('num_gpus', type=int, default=1)
+    parser.add_argument('epoch_games', type=int, default=100, required=False)
+    parser.add_argument('testing_games', type=int, default=100, required=False)
+    parser.add_argument('testing_depth', type=int, default=200, required=False)
+    parser.add_argument('training_depth', type=int, default=200, required=False)
+    parser.add_argument('training_processes', type=int, default=2, required=False)
+    parser.add_argument('testing_processes', type=int, default=4, required=False)
+    parser.add_argument('num_gpus', type=int, default=1, required=False)
     args = parser.parse_args()
     torch.backends.cudnn.benchmark = True
     
