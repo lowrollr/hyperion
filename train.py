@@ -29,20 +29,19 @@ def self_play(model, device, optimizer, p_id, training_games=1, eval_depth=200):
             print('p_id:', move.uci(), eval, time.time() - start_time)
             print(board)
 
-def mp_train(devices):
+def mp_train(devices, epoch_games, depth, num_procs):
     model = HyperionDNN().to(devices[0])
     model.share_memory()
     if os.path.exists('./saved_models/model_best.pth'):
         model.load_state_dict('./saved_models/model_best.pth')
 
     optimizer = SharedAdam(model.parameters(), lr=1e-3)
-    num_procs = 2
 
     device = devices[0]
     # train(model, optimizer, devices[0], 0)
     procs = []
     for i in range(num_procs):
-        p = mp.Process(target=self_play, args=(model, device, optimizer, i))
+        p = mp.Process(target=self_play, args=(model, device, optimizer, i, epoch_games, depth))
         p.start()
         procs.append(p)
     for p in procs:
