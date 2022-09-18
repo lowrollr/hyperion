@@ -45,7 +45,7 @@ def mp_selfplay(candidate_model, devices, num_games, depth, num_procs):
     # load best model
     best_model = HyperionDNN().to(devices[0])
     if os.path.exists('./saved_models/model_best.pth'):
-        best_model.load_state_dict('./saved_models/model_best.pth')
+        best_model.load_state_dict(torch.load('./saved_models/model_best.pth'))
         procs = []
         for _ in range(num_procs):
             p = mp.Process(target=selfplay, args=(candidate_model, best_model, devices[0], devices[0], num_games, depth))

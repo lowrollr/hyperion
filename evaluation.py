@@ -153,7 +153,7 @@ class MCST_Evaluator:
         if term_state is not None:
             return (term_state, None)
         
-        engine_eval, _, move, training_board = self.choose_move(board, not first, self.training)
+        engine_eval, _, move, training_board = self.choose_move(board, use_mini=not first, exploring=self.training)
 
         board.push(move)
         result, _ = self.playout(board)
