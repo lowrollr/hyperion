@@ -18,9 +18,8 @@ if __name__ == '__main__':
     devices = [torch.device('cpu')]
     if torch.cuda.is_available():
         devices = []
-        for i in range(torch.cuda.device_count()):
+        for i in range(args.num_gpus):
             devices.append(torch.device(f"cuda:{i}"))
-        print("utilizing", torch.cuda.device_count(), 'gpus')
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
     else:
         torch.set_default_tensor_type(torch.FloatTensor)
