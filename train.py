@@ -40,16 +40,16 @@ def mp_train(devices, epoch_games, depth, num_procs):
         model.load_state_dict(torch.load('./saved_models/model_best.pth'))
 
     optimizer = SharedAdam(model.parameters(), lr=1e-3)
-
+    procs = []
     for d_, device in enumerate(devices):
         # train(model, optimizer, devices[0], 0)
-        procs = []
+        
         for i in range(num_procs - (1 if d_ == 0 else 0)):
             p = mp.Process(target=self_play, args=(model, device, optimizer, i, epoch_games, depth))
             p.start()
             procs.append(p)
-        for p in procs:
-            p.join()
-        # save the model
-        torch.save(model.state_dict(), './saved_models/model_last.pth')
-        return model
+    for p in procs:
+        p.join()
+    # save the model
+    torch.save(model.state_dict(), './saved_models/model_last.pth')
+    return model
