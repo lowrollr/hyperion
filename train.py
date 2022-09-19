@@ -26,6 +26,7 @@ def self_play(model, device, optimizer, p_id, training_games=1, eval_depth=200):
             board = chess.Board()
             print(f'Process {p_id} finished game {games_played}/{training_games}')
             games_played += 1
+    evaluator.trainer.optimize_model()
         
 
 def mp_train(devices, epoch_games, depth, num_procs):

@@ -1,7 +1,7 @@
 
 from copy import deepcopy
 from random import choice, choices
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 import chess
 from nn import convert_to_nn_state
 import numpy as np
@@ -21,7 +21,6 @@ class MCST_Evaluator:
         self.device = device
         self.ucb_scores = dict()
         self.training_boards = []
-        self.training_results = []
         self.batch_size = training_batch_size
         self.model_runs = 0
         if training:
@@ -53,10 +52,10 @@ class MCST_Evaluator:
         else:
             return None
 
-    def train_on_samples(self):
-        self.trainer.optimize_model(
-            torch.from_numpy(np.stack(self.training_boards, axis=0)).to(self.device), 
-            torch.tensor(self.training_results).unsqueeze(1).to(self.device)
+    def send_training_samples(self, game_result):
+        self.trainer.store_results(
+            np.stack(self.training_boards, axis=0), 
+            np.full((len(self.training_boards), 1), game_result)
         )
   
 
@@ -73,13 +72,13 @@ class MCST_Evaluator:
             return (term_state, None)
         
         if not ucb_scores:
-            result, move = self.playout(board, True)
+            result, _, move, _ = self.choose_move(board, use_mini=False, exploring = self.training)
             ucb_scores['t'] = result
             ucb_scores['n'] = 1
             ucb_scores['c'] = {move.uci(): dict()}
             return (result, move)
 
-        _, _, move = self.choose_expansion(board, ucb_scores, exploring=not self.training)
+        _, _, move = self.choose_expansion(board, ucb_scores, exploring = self.training)
         uci = move.uci()
         if not ucb_scores['c'].get(uci):
             ucb_scores['c'][uci] = {}
@@ -117,12 +116,12 @@ class MCST_Evaluator:
         else:
             return choices(moves, move_ps, k=1)[0]
 
-    def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move, np.ndarray]:
+    def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move]:
         legal_moves = list(board.legal_moves)
         board_states = []
 
         if use_mini:
-            return (0.0, 0, choice(legal_moves), None)
+            return (0.0, 0, choice(legal_moves))
 
         for move in legal_moves:
             board.push(move)
@@ -138,40 +137,41 @@ class MCST_Evaluator:
             scores_moves = list(enumerate(legal_moves))
             best = choices(scores_moves, scores, k=1)[0]
             index = best[0]
-            res = (scores[best[0]], index, best[1], input[index])
+            res = (scores[best[0]], index, best[1])
             return res
         else:
             index = torch.argmax(scores).item()
-            res =  (scores[index], index, legal_moves[index], input[index])
+            res =  (scores[index], index, legal_moves[index])
             return res
         
-    def playout(self, board: chess.Board, first=False) -> int:
-        term_state = self.terminal_state(board)
-        if term_state is not None:
-            return (term_state, None)
+    # def playout(self, board: chess.Board, first=False) -> int:
+    #     term_state = self.terminal_state(board)
+    #     if term_state is not None:
+    #         return (term_state, None)
         
-        _, _, move, training_board = self.choose_move(board, use_mini=not first, exploring=self.training)
-        board.push(move)
-        result, _ = self.playout(board)
-        board.pop()
+    #     _, _, move, training_board = self.choose_move(board, use_mini=not first, exploring=self.training)
+    #     board.push(move)
+    #     result, _ = self.playout(board)
+    #     board.pop()
 
-        if training_board is not None:
-            self.model_runs += 1
-            self.training_boards.append(training_board)
-            self.training_results.append(result)
-            if (self.model_runs >= self.batch_size) and self.training:
-                self.train_on_samples()
-                self.training_boards = []
-                self.training_results = []
-                self.model_runs = 0
-        return result, move
+    #     if training_board is not None:
+    #         self.model_runs += 1
+    #         self.training_boards.append(training_board)
+    #         self.training_results.append(result)
+    #         if (self.model_runs >= self.batch_size) and self.training:
+    #             self.train_on_samples()
+    #             self.training_boards = []
+    #             self.training_results = []
+    #             self.model_runs = 0
+    #     return result, move
 
  
     def make_best_move(self, board: chess.Board, iterations=200) -> Tuple[chess.Move, float]:
         for i in range(iterations):
             self.explore(board, self.ucb_scores)
         
-        s, _, m = self.choose_expansion(board, self.ucb_scores, exploring=False, allow_null=False, )
+        s, _, m = self.choose_expansion(board, self.ucb_scores, exploring=False, allow_null=False)
+        self.training_boards.append(convert_to_nn_state(board))
         # print(self.ucb_scores)
         if m:
             self.walk_tree(m.uci())
