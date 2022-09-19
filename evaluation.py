@@ -65,7 +65,6 @@ class MCST_Evaluator:
         return res
     
     def walk_tree(self, move: str):
-        # print(self.ucb_scores)
         self.ucb_scores = self.ucb_scores['c'][move]
 
     def explore(self, board: chess.Board, ucb_scores) -> Tuple[float, chess.Move]:
@@ -74,14 +73,13 @@ class MCST_Evaluator:
             return (term_state, None)
         
         if not ucb_scores:
-            print('playout')
             result, move = self.playout(board, True)
             ucb_scores['t'] = result
             ucb_scores['n'] = 1
             ucb_scores['c'] = {move.uci(): dict()}
             return (result, move)
 
-        _, _, move = self.choose_expansion(board, ucb_scores, not self.training)
+        _, _, move = self.choose_expansion(board, ucb_scores, exploring=not self.training)
         uci = move.uci()
         if not ucb_scores['c'].get(uci):
             ucb_scores['c'][uci] = {}
@@ -93,7 +91,7 @@ class MCST_Evaluator:
         return (result, move)
         
 
-    def choose_expansion(self, board: chess.Board, ucb_scores, exploring=True) -> Tuple[float, int, chess.Move]:
+    def choose_expansion(self, board: chess.Board, ucb_scores, exploring=True, allow_null=True) -> Tuple[float, int, chess.Move]:
         best_move = (float('-inf'), 0, None)
         moves = []
         move_ps = []
@@ -104,7 +102,7 @@ class MCST_Evaluator:
             child_ucb = ucb_scores['c'].get(uci)
             if child_ucb:
                 score = self.ucb1(child_ucb['t'], child_ucb['n'], ucb_scores['n'] + 1)
-            else: # if move doesn't have a score yet, choose that one
+            elif allow_null: # if move doesn't have a score yet, choose that one
                 return (score, i, move)
 
             if not exploring:
@@ -159,7 +157,6 @@ class MCST_Evaluator:
 
         if training_board is not None:
             self.model_runs += 1
-            print(self.model_runs)
             self.training_boards.append(training_board)
             self.training_results.append(result)
             if (self.model_runs >= self.batch_size) and self.training:
@@ -174,7 +171,7 @@ class MCST_Evaluator:
         for i in range(iterations):
             self.explore(board, self.ucb_scores)
         
-        s, _, m = self.choose_expansion(board, self.ucb_scores, allow_null=False, exploring=False)
+        s, _, m = self.choose_expansion(board, self.ucb_scores, exploring=False, allow_null=False, )
         # print(self.ucb_scores)
         if m:
             self.walk_tree(m.uci())
