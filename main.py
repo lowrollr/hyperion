@@ -15,9 +15,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     torch.backends.cudnn.benchmark = True
     
-    device = torch.device('cpu')
+    devices = [torch.device('cpu')]
     if torch.cuda.is_available():
-        device = torch.device("cuda:0")
+        devices = []
+        for i in range(torch.cuda.device_count()):
+            devices.append(torch.device(f"cuda:{i}"))
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
     else:
         torch.set_default_tensor_type(torch.FloatTensor)
@@ -25,5 +27,5 @@ if __name__ == '__main__':
     torch.multiprocessing.set_start_method('spawn')
 
     while True:
-        trained_model = mp_train([device], args.epoch_games, args.training_depth, args.training_processes)
-        mp_selfplay(trained_model, [device], args.testing_games, args.testing_depth, args.testing_processes)
+        trained_model = mp_train(devices, args.epoch_games, args.training_depth, args.training_processes)
+        mp_selfplay(trained_model, devices, args.testing_games, args.testing_depth, args.testing_processes)
