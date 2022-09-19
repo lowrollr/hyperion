@@ -24,10 +24,9 @@ def self_play(model, device, optimizer, p_id, training_games=1, eval_depth=200):
         move, _ = evaluator.make_best_move(board, eval_depth)
         if move is None:
             board = chess.Board()
+            print(f'Process {p_id} finished game {games_played}/{training_games}')
             games_played += 1
-        else:
-            print('p_id:', move.uci(), eval, time.time() - start_time)
-            print(board)
+        
 
 def mp_train(devices, epoch_games, depth, num_procs):
     model = HyperionDNN().to(devices[0])

@@ -14,4 +14,3 @@ class MPTrainer:
             gp._grad = lp.grad
         self.optimizer.step()
         self.local_model.load_state_dict(self.global_model.state_dict())
-        print('optimized model!')

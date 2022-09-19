@@ -1,7 +1,6 @@
 
 from copy import deepcopy
 from random import choice, choices
-from selectors import EpollSelector
 from typing import Optional, Tuple
 import chess
 from nn import convert_to_nn_state
@@ -153,17 +152,17 @@ class MCST_Evaluator:
         if term_state is not None:
             return (term_state, None)
         
-        engine_eval, _, move, training_board = self.choose_move(board, use_mini=not first, exploring=self.training)
-
+        _, _, move, training_board = self.choose_move(board, use_mini=not first, exploring=self.training)
         board.push(move)
         result, _ = self.playout(board)
         board.pop()
 
         if training_board is not None:
             self.model_runs += 1
+            print(self.model_runs)
             self.training_boards.append(training_board)
             self.training_results.append(result)
-            if self.model_runs >= self.batch_size and self.training:
+            if (self.model_runs >= self.batch_size) and self.training:
                 self.train_on_samples()
                 self.training_boards = []
                 self.training_results = []
@@ -176,6 +175,7 @@ class MCST_Evaluator:
             self.explore(board, self.ucb_scores)
         
         s, _, m = self.choose_expansion(board, self.ucb_scores, allow_null=False, exploring=False)
+        # print(self.ucb_scores)
         if m:
             self.walk_tree(m.uci())
             board.push(m)
