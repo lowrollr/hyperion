@@ -43,7 +43,7 @@ def mp_train(devices, epoch_games, depth, num_procs):
     optimizer = SharedAdam(model.parameters(), lr=1e-3)
     procs = []
     p_id = 0
-    for d_, device in enumerate(devices):
+    for d_, device in reversed(list(enumerate(devices))):
         # train(model, optimizer, devices[0], 0)
         
         for _ in range(num_procs - (1 if d_ == 0 else 0)):
