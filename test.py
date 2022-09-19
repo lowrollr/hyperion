@@ -11,8 +11,8 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
         player1, player2 = model1, model2
         if game_num % 2:
             player1, player2 = model2, model1
-        eval1 = MCST_Evaluator(player1, device1, None, False)
-        eval2 = MCST_Evaluator(player2, device2, None, False)
+        eval1 = MCST_Evaluator(player1, None, device1, None, training=False)
+        eval2 = MCST_Evaluator(player2, None, device2, None, training=False)
         p1_wins = 0
         p2_wins = 0
         draws = 0

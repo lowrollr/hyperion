@@ -15,8 +15,8 @@ import os
 
 
 
-def self_play(model, device, optimizer, p_id, training_games=1, eval_depth=200):
-    evaluator = MCST_Evaluator(model, device, training=True, optimizer=optimizer, training_batch_size=40)
+def self_play(local_model, global_model, device, optimizer, p_id, training_games=1, eval_depth=200):
+    evaluator = MCST_Evaluator(local_model, global_model, device, training=True, optimizer=optimizer, training_batch_size=40)
     board = chess.Board()
     games_played = 0
     while games_played < training_games:
@@ -45,7 +45,8 @@ def mp_train(devices, epoch_games, depth, num_procs):
         # train(model, optimizer, devices[0], 0)
         
         for i in range(num_procs - (1 if d_ == 0 else 0)):
-            p = mp.Process(target=self_play, args=(model, device, optimizer, i, epoch_games, depth))
+            t_model = deepcopy(model).to(device)
+            p = mp.Process(target=self_play, args=(t_model, model, device, optimizer, i, epoch_games, depth))
             p.start()
             procs.append(p)
     for p in procs:
