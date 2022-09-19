@@ -14,9 +14,9 @@ from trainer import MPTrainer
 class MCST_Evaluator:
     def __init__(self, model, device, optimizer, training = True, training_batch_size=20):
         if training:
-            self.local_model = deepcopy(model)
+            self.local_model = deepcopy(model).to(device)
         else:
-            self.local_model = model
+            self.local_model = model.to(device)
         self.global_model = model
         self.device = device
         self.ucb_scores = dict()
