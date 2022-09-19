@@ -16,6 +16,7 @@ import os
 
 
 def self_play(local_model, global_model, device, optimizer, p_id, training_games=1, eval_depth=200):
+    print(f'{p_id}: Begin training games on {device}')
     evaluator = MCST_Evaluator(local_model, global_model, device, training=True, optimizer=optimizer, training_batch_size=40)
     board = chess.Board()
     games_played = 0
@@ -41,14 +42,18 @@ def mp_train(devices, epoch_games, depth, num_procs):
 
     optimizer = SharedAdam(model.parameters(), lr=1e-3)
     procs = []
+    p_id = 0
     for d_, device in enumerate(devices):
         # train(model, optimizer, devices[0], 0)
         
-        for i in range(num_procs - (1 if d_ == 0 else 0)):
+        for _ in range(num_procs - (1 if d_ == 0 else 0)):
+            
             t_model = deepcopy(model).to(device)
-            p = mp.Process(target=self_play, args=(t_model, model, device, optimizer, i, epoch_games, depth))
+            print(f'{p_id}: Transferred model to {device}')
+            p = mp.Process(target=self_play, args=(t_model, model, device, optimizer, p_id, epoch_games, depth))
             p.start()
             procs.append(p)
+            p_id += 1
     for p in procs:
         p.join()
     # save the model
