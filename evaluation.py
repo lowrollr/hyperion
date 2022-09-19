@@ -72,7 +72,7 @@ class MCST_Evaluator:
             return (term_state, None)
         
         if not ucb_scores:
-            result, _, move, _ = self.choose_move(board, use_mini=False, exploring = self.training)
+            result, _, move = self.choose_move(board, use_mini=False, exploring = self.training)
             ucb_scores['t'] = result
             ucb_scores['n'] = 1
             ucb_scores['c'] = {move.uci(): dict()}
