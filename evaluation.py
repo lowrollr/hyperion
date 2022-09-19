@@ -22,7 +22,7 @@ class MCST_Evaluator:
         self.batch_size = training_batch_size
         self.model_runs = 0
         if training:
-            self.trainer = MPTrainer(self.global_model, self.local_model, torch.nn.functional.l1_loss, optimizer)
+            self.trainer = MPTrainer(self.global_model, self.local_model, torch.nn.functional.l1_loss, optimizer, device)
             self.training = True
         else:
             self.trainer = None

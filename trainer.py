@@ -2,7 +2,7 @@ import torch
 from sklearn.utils import shuffle 
 
 class MPTrainer:
-    def __init__(self, global_model, local_model, loss_fn, optimizer) -> None:
+    def __init__(self, global_model, local_model, loss_fn, optimizer, device) -> None:
         self.global_model = global_model
         self.local_model = local_model
         self.loss_fn = loss_fn
@@ -10,6 +10,7 @@ class MPTrainer:
         self.X = []
         self.y = []
         self.batch_size = 20
+        self.device = device
 
     def store_results(self, boards, results):
         self.X.extend(boards)
