@@ -12,10 +12,10 @@ from trainer import MPTrainer
 
 
 class MCST_Evaluator:
-    def __init__(self, model, device, optimizer, training = True, training_batch_size=20):
+    def __init__(self, local_model, global_model, device, optimizer, training = True, training_batch_size=20):
         
-        self.local_model = model
-        self.global_model = model
+        self.local_model = local_model
+        self.global_model = global_model
         self.device = device
         self.ucb_scores = dict()
         self.training_boards = []
