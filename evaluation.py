@@ -74,6 +74,7 @@ class MCST_Evaluator:
             return (term_state, None)
         
         if not ucb_scores:
+            print('playout')
             result, move = self.playout(board, True)
             ucb_scores['t'] = result
             ucb_scores['n'] = 1
@@ -92,7 +93,7 @@ class MCST_Evaluator:
         return (result, move)
         
 
-    def choose_expansion(self, board: chess.Board, ucb_scores, allow_null=True, exploring=True) -> Tuple[float, int, chess.Move]:
+    def choose_expansion(self, board: chess.Board, ucb_scores, exploring=True) -> Tuple[float, int, chess.Move]:
         best_move = (float('-inf'), 0, None)
         moves = []
         move_ps = []
@@ -103,7 +104,7 @@ class MCST_Evaluator:
             child_ucb = ucb_scores['c'].get(uci)
             if child_ucb:
                 score = self.ucb1(child_ucb['t'], child_ucb['n'], ucb_scores['n'] + 1)
-            elif allow_null:
+            else: # if move doesn't have a score yet, choose that one
                 return (score, i, move)
 
             if not exploring:
@@ -116,7 +117,7 @@ class MCST_Evaluator:
         if not exploring:        
             return best_move
         else:
-            return choices(moves, move_ps)[0]
+            return choices(moves, move_ps, k=1)[0]
 
     def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move, np.ndarray]:
         legal_moves = list(board.legal_moves)
@@ -124,7 +125,6 @@ class MCST_Evaluator:
 
         if use_mini:
             return (0.0, 0, choice(legal_moves), None)
-
 
         for move in legal_moves:
             board.push(move)
@@ -172,7 +172,6 @@ class MCST_Evaluator:
  
     def make_best_move(self, board: chess.Board, iterations=200) -> Tuple[chess.Move, float]:
         for i in range(iterations):
-            print('iter', i)
             self.explore(board, self.ucb_scores)
         
         s, _, m = self.choose_expansion(board, self.ucb_scores, allow_null=False, exploring=False)
