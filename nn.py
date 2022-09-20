@@ -45,33 +45,56 @@ def convert_to_nn_state(board: chess.Board):
     for sq, piece in board.piece_map().items():
         v = PIECE_ID_MAP[(piece.piece_type, piece.color)]
         r, c = sq // 8, sq % 8
-        data_tensor[v][r][c] = 1.0
-    data_tensor = np.expand_dims(data_tensor, axis=0)
+        data_tensor[v][r][c] = 1
     return data_tensor
 
+class ResidualLayer(nn.Module):
+    def __init__(self, in_c, out_c) -> None:
+        super().__init__()
+        self.block = nn.Sequential(
+            nn.Conv2d(in_c, out_c, kernel_size=(3,3), padding=1, bias=False),
+            nn.BatchNorm2d(out_c),
+            nn.ReLU(),
+            nn.Conv2d(out_c, out_c, kernel_size=(3,3), padding=1, bias=False),
+            nn.BatchNorm2d(out_c),
+        )
+    def forward(self, x):
+        return nn.functional.relu(self.block(x) + x)
+
+class ConvolutionalLayer(nn.Module):
+    def __init__(self, in_c, out_c, k_size=3, padding=1) -> None:
+        super().__init__()
+        self.block = nn.Sequential(
+            nn.Conv2d(in_c, out_c, kernel_size=k_size, padding=padding),
+            nn.BatchNorm2d(out_c),
+            nn.ReLU()
+        )
+    def forward(self, x):
+        return self.block(x)
+    
 class HyperionDNN(nn.Module):
     
-    def __init__(self):
+    def __init__(self, residual_layers=20):
         super().__init__()
-        self.conv1 = nn.Conv3d(1, 256, (1,3,3), bias=False)
-        self.conv2 = nn.Conv3d(256, 512, (1,3,3), bias=False)
-        self.conv3 = nn.Conv3d(512, 512, (1,4,4), bias=False)
-        self.bn1 = nn.BatchNorm3d(256)
-        self.bn2 = nn.BatchNorm3d(512)
-        self.bn3 = nn.BatchNorm3d(512)
-        self.flatten = nn.Flatten(1,4)
-        self.lin1 = nn.Linear(9728, 9728)
-        self.lin2 = nn.Linear(9728, 1)
+        self.conv1 = ConvolutionalLayer(21, 256)
+        self.residual_layers = []
+        for _ in range(20):
+            self.residual_layers.append(ResidualLayer(256, 256))
+        self.conv2 = ConvolutionalLayer(256, 1, k_size=1, padding=0)
+        self.lin1 = nn.Linear(64, 64)
+        self.fl1 = nn.Flatten()
+        self.lin2 = nn.Linear(64, 1)
         self.tanh = nn.Tanh()
 
     def forward(self, x, **kwargs):
-        x = nn.functional.relu(self.bn1(self.conv1(x)))
-        x = nn.functional.relu(self.bn2(self.conv2(x)))
-        x = nn.functional.relu(self.bn3(self.conv3(x)))
-        x = self.flatten(x)
+        x = self.conv1(x)
+        for r in self.residual_layers:
+            x = r(x)
+        x = self.conv2(x)
+        x = self.fl1(x)
         x = nn.functional.relu(self.lin1(x))
-        x = nn.functional.relu(self.lin2(x))
-        return self.tanh(x)
+        return self.tanh(self.lin2(x))
+        
     
     
 
