@@ -20,16 +20,18 @@ def self_play(local_model, global_model, device, optimizer, p_id, training_games
     evaluator = MCST_Evaluator(local_model, global_model, device, training=True, optimizer=optimizer, training_batch_size=40)
     board = chess.Board()
     games_played = 0
+    moves = 0
     while games_played < training_games:
         start_time = time.time()
         move, _ = evaluator.make_best_move(board, eval_depth)
         if move is None:
             board = chess.Board()
-            
+            moves = 0
             games_played += 1
             print(f'Process {p_id} finished game {games_played}/{training_games}')
         else:
-            print(move.uci(), time.time() - start_time)
+            moves += 1
+            print(f'({p_id}) {moves}: {move.uci()} {round(time.time()- start_time,2)}s')
     evaluator.trainer.optimize_model()
         
 
