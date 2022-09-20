@@ -152,28 +152,6 @@ class MCST_Evaluator:
                 res =  (scores[index], index, legal_moves[index])
                 return res
         
-    # def playout(self, board: chess.Board, first=False) -> int:
-    #     term_state = self.terminal_state(board)
-    #     if term_state is not None:
-    #         return (term_state, None)
-        
-    #     _, _, move, training_board = self.choose_move(board, use_mini=not first, exploring=self.training)
-    #     board.push(move)
-    #     result, _ = self.playout(board)
-    #     board.pop()
-
-    #     if training_board is not None:
-    #         self.model_runs += 1
-    #         self.training_boards.append(training_board)
-    #         self.training_results.append(result)
-    #         if (self.model_runs >= self.batch_size) and self.training:
-    #             self.train_on_samples()
-    #             self.training_boards = []
-    #             self.training_results = []
-    #             self.model_runs = 0
-    #     return result, move
-
- 
     def make_best_move(self, board: chess.Board, iterations=200) -> Tuple[chess.Move, float]:
         for i in range(iterations):
             self.explore(board, self.ucb_scores)

@@ -1,3 +1,4 @@
+from concurrent.futures import process
 import os
 import torch
 import chess
@@ -7,15 +8,17 @@ from nn import HyperionDNN
 
 def selfplay(model1, model2, device1, device2, num_games, depth):
     game_num = 0
+    new_wins = 0
+    old_wins = 0
+    draws = 0
     while game_num < num_games:
-        player1, player2 = model1, model2
-        if game_num % 2:
-            player1, player2 = model2, model1
+        player1, player2 = model2, model1
+        new_is_white = bool(game_num % 2)
+        if new_is_white:
+            player1, player2 = model1, model2
         eval1 = MCST_Evaluator(player1, None, device1, None, training=False)
         eval2 = MCST_Evaluator(player2, None, device2, None, training=False)
-        p1_wins = 0
-        p2_wins = 0
-        draws = 0
+        
         board = chess.Board()
         while True:
             with torch.no_grad():
@@ -30,12 +33,18 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
                     if term == 0:
                         draws += 1
                     elif term == 1:
-                        p1_wins += 1
+                        if new_is_white:
+                            new_wins += 1
+                        else:
+                            old_wins += 1
                     elif term == -1:
-                        p2_wins += 1
+                        if new_is_white:
+                            old_wins += 1
+                        else:
+                            new_wins += 1
                     break
         game_num += 1
-    return p1_wins, p2_wins, draws
+    return (new_wins, old_wins, draws)
 
 
 
@@ -46,12 +55,16 @@ def mp_selfplay(candidate_model, devices, num_games, depth, num_procs):
     best_model = HyperionDNN().to(devices[0])
     if os.path.exists('./saved_models/model_best.pth'):
         best_model.load_state_dict(torch.load('./saved_models/model_best.pth'))
-        procs = []
-        for _ in range(num_procs):
-            p = mp.Process(target=selfplay, args=(candidate_model, best_model, devices[0], devices[0], num_games, depth))
-            p.start()
-            procs.append(p)
-        for p in procs:
-            p.join()
+        with mp.Pool(processes=num_procs) as pool:
+            results = pool.map_async(selfplay, [(candidate_model, best_model, devices[0], devices[0], num_games, depth) for _ in range(num_procs)])
+            results.wait()
+            new_wins = 0
+            old_wins = 0
+            for nw, ow, _ in results:
+                new_wins += nw
+                old_wins += ow
+            df = new_wins - old_wins
+            if df / (num_games * num_procs) >= 0.05:
+                torch.save(candidate_model.state_dict(), './saved_models/model_best.pth')
     else:
         torch.save(candidate_model.state_dict(), './saved_models/model_best.pth')
