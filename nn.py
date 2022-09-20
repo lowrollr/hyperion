@@ -56,9 +56,10 @@ class ResidualLayer(nn.Module):
             nn.BatchNorm2d(out_c),
             nn.ReLU(),
             nn.Conv2d(out_c, out_c, kernel_size=(3,3), padding=1, bias=False),
-            nn.BatchNorm2d(out_c),
+            nn.BatchNorm2d(out_c)
         )
     def forward(self, x):
+        b = self.block(x)
         return nn.functional.relu(self.block(x) + x)
 
 class ConvolutionalLayer(nn.Module):
@@ -77,15 +78,21 @@ class HyperionDNN(nn.Module):
     def __init__(self, residual_layers=20):
         super().__init__()
         self.conv1 = ConvolutionalLayer(21, 256)
+        
         self.residual_layers = []
-        for _ in range(20):
-            self.residual_layers.append(ResidualLayer(256, 256))
+        for _ in range(residual_layers):
+            r = ResidualLayer(256, 256)
+            r.to(self.device)
+            self.residual_layers.append(r)
+
         self.conv2 = ConvolutionalLayer(256, 1, k_size=1, padding=0)
         self.lin1 = nn.Linear(64, 64)
         self.fl1 = nn.Flatten()
         self.lin2 = nn.Linear(64, 1)
         self.tanh = nn.Tanh()
-
+        self.conv1.to(self.device)
+        self.conv2.to(self.device)
+        
     def forward(self, x, **kwargs):
         x = self.conv1(x)
         for r in self.residual_layers:
@@ -94,6 +101,10 @@ class HyperionDNN(nn.Module):
         x = self.fl1(x)
         x = nn.functional.relu(self.lin1(x))
         return self.tanh(self.lin2(x))
+    
+    @property
+    def device(self):
+        return next(self.parameters()).device
         
     
     
