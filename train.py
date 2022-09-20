@@ -45,12 +45,13 @@ def mp_train(devices, epoch_games, depth, num_procs):
     p_id = 0
     for d_, device in reversed(list(enumerate(devices))):
         # train(model, optimizer, devices[0], 0)
-        t_model = model.to(device, copy=True)
-        for _ in range(num_procs - (1 if d_ == 0 else 0)):
-            
-            
+        t_model = deepcopy(model).to(device)
+        for i in range(num_procs - (1 if d_ == 0 else 0)):
+            l_model = t_model
+            if i != 0:
+                l_model = deepcopy(t_model)
             print(f'{p_id}: Transferred model to {device}')
-            p = mp.Process(target=self_play, args=(deepcopy(t_model), model, device, optimizer, p_id, epoch_games, depth))
+            p = mp.Process(target=self_play, args=(l_model, model, device, optimizer, p_id, epoch_games, depth))
             procs.append(p)
             p_id += 1
     for p in procs:
