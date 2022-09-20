@@ -57,8 +57,8 @@ class MCST_Evaluator:
         )
   
 
-    def get_nn_score(self, board_states: torch.Tensor, use_mini: bool):
-        res = self.local_model(board_states, mini=use_mini)
+    def get_nn_score(self, board_states: torch.Tensor):
+        res = self.local_model(board_states)
         return res
     
     def walk_tree(self, move: str):
@@ -70,7 +70,7 @@ class MCST_Evaluator:
             return (term_state, None)
         
         if not ucb_scores:
-            result, _, move = self.choose_move(board, use_mini=False, exploring = self.training)
+            result, _, move = self.choose_move(board, exploring = self.training)
             ucb_scores['t'] = (result if board.turn else -result)
             ucb_scores['n'] = 1
             ucb_scores['c'] = {move.uci(): dict()}
