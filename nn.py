@@ -82,7 +82,6 @@ class HyperionDNN(nn.Module):
         self.residual_layers = []
         for _ in range(residual_layers):
             r = ResidualLayer(256, 256)
-            r.to(self.device)
             self.residual_layers.append(r)
 
         self.conv2 = ConvolutionalLayer(256, 1, k_size=1, padding=0)
@@ -90,8 +89,13 @@ class HyperionDNN(nn.Module):
         self.fl1 = nn.Flatten()
         self.lin2 = nn.Linear(64, 1)
         self.tanh = nn.Tanh()
+    
+    def migrate_submodules(self):
         self.conv1.to(self.device)
         self.conv2.to(self.device)
+        for r in self.residual_layers:
+            r.to(self.device)
+        
         
     def forward(self, x, **kwargs):
         x = self.conv1(x)
