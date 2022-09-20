@@ -35,7 +35,7 @@ def self_play(local_model, global_model, device, optimizer, p_id, training_games
 
 def mp_train(devices, epoch_games, depth, num_procs):
     model = HyperionDNN().to(devices[0])
-    model.share_memory()
+    
     
     if os.path.exists('./saved_models/model_best.pth'):
         model.load_state_dict(torch.load('./saved_models/model_best.pth'))
