@@ -1,2 +1,2 @@
 # hyperion
-an alphazero-inspired chess engine, written in python
+an alphazero-inspired chess engine
