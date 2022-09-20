@@ -57,9 +57,8 @@ class ResidualLayer(nn.Module):
             nn.ReLU(),
             nn.Conv2d(out_c, out_c, kernel_size=(3,3), padding=1, bias=False),
             nn.BatchNorm2d(out_c)
-        )
+        ).to()
     def forward(self, x):
-        b = self.block(x)
         return nn.functional.relu(self.block(x) + x)
 
 class ConvolutionalLayer(nn.Module):
@@ -91,10 +90,12 @@ class HyperionDNN(nn.Module):
         self.tanh = nn.Tanh()
     
     def migrate_submodules(self):
-        self.conv1.to(self.device)
-        self.conv2.to(self.device)
+        self.conv1 = self.conv1.to(self.device)
+        self.conv2 = self.conv2.to(self.device)
+        new_residual_layers = []
         for r in self.residual_layers:
-            r.to(self.device)
+            new_residual_layers.append(r.to(self.device))
+        self.residual_layers = new_residual_layers
         
         
     def forward(self, x, **kwargs):

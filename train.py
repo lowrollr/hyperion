@@ -50,7 +50,6 @@ def mp_train(devices, epoch_games, depth, num_procs):
             l_model = t_model
             if i != 0:
                 l_model = deepcopy(t_model)
-                l_model.migrate_submodules()
                 print(f'{p_id}: Transferred model to {device}')
 
             p = mp.Process(target=self_play, args=(l_model, model, device, optimizer, p_id, epoch_games, depth))
