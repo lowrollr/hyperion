@@ -71,7 +71,7 @@ class MCST_Evaluator:
         
         if not ucb_scores:
             result, _, move = self.choose_move(board, use_mini=False, exploring = self.training)
-            ucb_scores['t'] = result
+            ucb_scores['t'] = (result if board.turn else -result)
             ucb_scores['n'] = 1
             ucb_scores['c'] = {move.uci(): dict()}
             return (result, move)
@@ -114,12 +114,10 @@ class MCST_Evaluator:
         else:
             return choices(moves, move_ps, k=1)[0]
 
-    def choose_move(self, board: chess.Board, use_mini: bool, exploring = False) -> Tuple[float, int, chess.Move]:
+    def choose_move(self, board: chess.Board, exploring = False) -> Tuple[float, int, chess.Move]:
         legal_moves = list(board.legal_moves)
         board_states = []
 
-        if use_mini:
-            return (0.0, 0, choice(legal_moves))
 
         for move in legal_moves:
             board.push(move)
@@ -129,18 +127,30 @@ class MCST_Evaluator:
         input = np.stack(board_states, axis=0)
         input_tensor = torch.from_numpy(input).to(self.device)
         with torch.no_grad():
-            scores = self.get_nn_score(input_tensor, use_mini)
+            scores = self.get_nn_score(input_tensor)
 
         if exploring:
             scores_moves = list(enumerate(legal_moves))
-            best = choices(scores_moves, scores, k=1)[0]
-            index = best[0]
-            res = (scores[best[0]], index, best[1])
-            return res
+            if board.turn:
+                best = choices(scores_moves, scores, k=1)[0]
+                index = best[0]
+                res = (scores[best[0]], index, best[1])
+                return res
+            else:
+                
+                best = choices(scores_moves, torch.mul(scores, -1), k=1)[0]
+                index = best[0]
+                res = (scores[best[0]] * -1, index, best[1])
+                return res
         else:
-            index = torch.argmax(scores).item()
-            res =  (scores[index], index, legal_moves[index])
-            return res
+            if board.turn:
+                index = torch.argmax(scores).item()
+                res =  (scores[index], index, legal_moves[index])
+                return res
+            else:
+                index = torch.argmin(scores).item()
+                res =  (scores[index], index, legal_moves[index])
+                return res
         
     # def playout(self, board: chess.Board, first=False) -> int:
     #     term_state = self.terminal_state(board)
