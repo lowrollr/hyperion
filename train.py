@@ -46,6 +46,7 @@ def mp_train(devices, epoch_games, depth, num_procs):
     for d_, device in reversed(list(enumerate(devices))):
         # train(model, optimizer, devices[0], 0)
         t_model = deepcopy(model).to(device)
+        t_model.migrate_submodules()
         for i in range(num_procs - (1 if d_ == 0 else 0)):
             l_model = t_model
             if i != 0:
