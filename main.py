@@ -28,4 +28,5 @@ if __name__ == '__main__':
 
     while True:
         trained_model = mp_train(devices, args.epoch_games, args.training_depth, args.training_processes)
+        print('Beginning selfplay')
         mp_selfplay(trained_model, devices, args.testing_games, args.testing_depth, args.testing_processes)

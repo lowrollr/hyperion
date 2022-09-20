@@ -51,9 +51,10 @@ def mp_train(devices, epoch_games, depth, num_procs):
             t_model = deepcopy(model).to(device)
             print(f'{p_id}: Transferred model to {device}')
             p = mp.Process(target=self_play, args=(t_model, model, device, optimizer, p_id, epoch_games, depth))
-            p.start()
             procs.append(p)
             p_id += 1
+    for p in procs:
+        p.start()
     for p in procs:
         p.join()
     # save the model
