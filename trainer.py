@@ -18,8 +18,8 @@ class MPTrainer:
 
     def optimize_model(self, epochs=3):
         self.X, self.y = shuffle(self.X, self.y)
-        X, y = torch.tensor(self.X, device=self.device), \
-               torch.tensor(self.y, device=self.device)
+        X, y = torch.from_numpy(self.X).to(self.device), \
+               torch.from_numpy(self.y).to(self.device)
         total_loss = 0.0
         for _ in range(epochs):
             running_loss = 0.0
