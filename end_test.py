@@ -8,6 +8,15 @@ from nn import HyperionDNN
 import torch
 import chess
 
+
+device = torch.device('cpu')
+if torch.cuda.is_available():
+    device = torch.device('cuda:0')
+    torch.set_default_tensor_type('torch.cuda.FloatTensor')
+else:
+    torch.set_default_tensor_type(torch.FloatTensor)
+torch.set_default_dtype(torch.float)
+
 model = HyperionDNN()
 optimizer = torch.optim.Adam(model.parameters())
 
