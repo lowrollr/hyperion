@@ -29,7 +29,6 @@ def self_play(local_model, global_model, device, optimizer, p_id, training_games
         move, _ = evaluator.make_best_move(board, eval_depth)
         if move is None:
             board = chess.Board()
-            moves += 1
             acc_moves += moves
             moves = 0
             games_played += 1

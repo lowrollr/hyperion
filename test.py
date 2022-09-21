@@ -29,7 +29,7 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
                     m, _ = eval1.make_best_move(board, depth)          
                 else:
                     m, _ = eval2.make_best_move(board, depth)     
-                moves += 1
+                
                 if m is None:
                     acc_moves += moves
                     moves = 0
@@ -50,6 +50,8 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
                         else:
                             new_wins += 1
                     break
+                else:
+                    moves += 1
         game_num += 1
     avg_moves = acc_moves / num_games
     return (new_wins, old_wins, draws, avg_moves)
