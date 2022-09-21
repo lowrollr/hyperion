@@ -23,7 +23,7 @@ optimizer = torch.optim.Adam(model.parameters())
 evaluator = MCST_Evaluator(model, model, device, optimizer, False, 30)
 
 
-board = chess.Board('k1K5/7Q/4n3/4q3/8/8/8/8 w - - 0 0')
+board = chess.Board('k1K5/7Q/n7/4q3/8/8/8/8 b - - 0 1')
 
 print(evaluator.make_best_move(board))
 print(evaluator.make_best_move(board))
