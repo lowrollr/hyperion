@@ -80,10 +80,14 @@ class MCST_Evaluator:
         
         if not ucb_scores: # if at leaf node, use nn to choose move
             result, _, move = self.choose_move(board, exploring = self.training)
-            ucb_scores['t'] = -result
+            # score eval was calculated when turn was opposite what it is now
+            # if board.turn now is WHITE, score was calculated with BLACK to play
+            #   so it will be inverted twice (once since NN output is from white's pov, once because it was black's turn but now it's white's)
+            adj_result = (result if board.turn else -result) 
+            ucb_scores['t'] = adj_result
             ucb_scores['n'] = 1
             ucb_scores['c'] = {move.uci(): dict()}
-            return (-result, move)
+            return (adj_result, move)
 
         # otherwise choose best expansion to explore
         _, _, move = self.choose_expansion(board, ucb_scores, exploring = self.training)
