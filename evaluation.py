@@ -17,11 +17,7 @@ class MCST_Evaluator:
         self.local_model = local_model
         self.global_model = global_model
         self.device = device
-        self.ucb_scores = {
-            't': 0,
-            'n': 0,
-            'c': {}
-        }
+        self.ucb_scores = dict()
 
         self.training_boards = []
         self.batch_size = training_batch_size
@@ -37,11 +33,7 @@ class MCST_Evaluator:
     def reset(self):
         self.model_runs = 0
         self.training_boards = []
-        self.ucb_scores = {
-            't': 0,
-            'n': 0,
-            'c': {}
-        }
+        self.ucb_scores = dict()
 
     @staticmethod
     def ucb1(total_score: float, num_visits: int, num_parent_visits: int, c_val: int = 2) -> float:
@@ -77,26 +69,28 @@ class MCST_Evaluator:
 
     def explore(self, board: chess.Board, ucb_scores) -> Tuple[float, chess.Move]:
         term_state = self.terminal_state(board)
+
         if term_state is not None:
-            
             result = float('inf') * term_state if term_state else term_state
             ucb_scores['t'] = result
             ucb_scores['n'] = 1
             ucb_scores['c'] = {}
             return (term_state, None)
         
-        if not ucb_scores:
+        if not ucb_scores: # if at leaf node, use nn to choose move
             result, _, move = self.choose_move(board, exploring = self.training)
             ucb_scores['t'] = (result if board.turn else -result)
             ucb_scores['n'] = 1
             ucb_scores['c'] = {move.uci(): dict()}
             return (result, move)
 
+        # otherwise choose best expansion to explore
         _, _, move = self.choose_expansion(board, ucb_scores, exploring = self.training)
         uci = move.uci()
         if not ucb_scores['c'].get(uci):
             ucb_scores['c'][uci] = {}
         board.push(move)
+        # explore new board state
         result, _ = self.explore(board, ucb_scores['c'][uci])
         board.pop()
         ucb_scores['t'] += (result if board.turn else -result)
