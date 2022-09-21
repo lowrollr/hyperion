@@ -22,6 +22,7 @@ class MPTrainer:
         self.X, self.y = shuffle(np.concatenate(self.X, axis=None), np.concatenate(self.y, axis=None))
         X, y = torch.from_numpy(self.X).to(self.device), \
                torch.from_numpy(self.y).to(self.device)
+        print(X.shape, y.shape)
         total_loss = 0.0
         for _ in range(epochs):
             running_loss = 0.0
