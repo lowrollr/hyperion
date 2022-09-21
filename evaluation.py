@@ -165,7 +165,7 @@ class MCST_Evaluator:
         
         s, _, m = self.choose_expansion(board, self.ucb_scores, exploring=False, allow_null=False)
         self.training_boards.append(convert_to_nn_state(board))
-        for c, d in self.ucb_scores['c'].values():
+        for c, d in self.ucb_scores['c'].items():
             if d:
                 print(c, d['t'] / d['n'])
         if m:
