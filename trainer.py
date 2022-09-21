@@ -50,6 +50,4 @@ class MPTrainer:
             
             total_loss += running_loss
         size = X.size(0)
-        del X
-        del y
         return total_loss / size
