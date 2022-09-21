@@ -32,5 +32,6 @@ if __name__ == '__main__':
         print('Finished training epoch, beginning versus play...')
         (new_wins, old_wins, draws, t_avg_moves) = mp_selfplay(trained_model, devices, args.testing_games, args.testing_depth, args.testing_processes)
         print('Finished versus play...')
+        torch.cuda.empty_cache()
         with open('resutls.csv', mode='a') as f:
             f.write(','.join([str(x) for x in [avg_loss, avg_moves, avg_time, new_wins, old_wins, draws, t_avg_moves]]) + '\n')
