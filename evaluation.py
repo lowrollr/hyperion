@@ -55,7 +55,7 @@ class MCST_Evaluator:
     def send_training_samples(self, game_result):
         self.trainer.store_results(
             np.stack(self.training_boards, axis=0), 
-            np.full(len(self.training_boards), game_result)
+            np.full(len(self.training_boards), game_result, dtype=np.float32)
         )
   
 
