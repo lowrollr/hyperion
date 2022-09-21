@@ -49,6 +49,7 @@ class MPTrainer:
                 running_loss += loss.item() * batch_X.size(0)
             
             total_loss += running_loss
+        size = X.size(0)
         del X
         del y
-        return total_loss / X.size(0)
+        return total_loss / size
