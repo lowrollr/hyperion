@@ -14,11 +14,11 @@ class MPTrainer:
         self.device = device
 
     def store_results(self, boards, results):
-        self.X.extend(boards)
-        self.y.extend(results)
+        self.X.append(boards)
+        self.y.append(results)
 
     def optimize_model(self, epochs=3):
-        self.X, self.y = shuffle(np.array(self.X), np.array(self.y))
+        self.X, self.y = shuffle(np.cat(self.X), np.cat(self.y))
         X, y = torch.from_numpy(self.X).to(self.device), \
                torch.from_numpy(self.y).to(self.device)
         total_loss = 0.0
