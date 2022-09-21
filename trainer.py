@@ -23,15 +23,12 @@ class MPTrainer:
     def store_results(self, boards, results):
         self.X.append(boards)
         self.y.append(results)
-        print(boards.shape, results.shape)
 
     def optimize_model(self, epochs=3):
         X, y = np.concatenate(self.X, axis=0), np.concatenate(self.y, axis=0)
-        print(X.shape, y.shape)
         shuffle_arrays((X, y))
         X, y = torch.from_numpy(X).to(self.device), \
                torch.from_numpy(y).to(self.device)
-        print(X.shape, y.shape)
         total_loss = 0.0
         for _ in range(epochs):
             running_loss = 0.0
@@ -39,7 +36,8 @@ class MPTrainer:
                 batch_X = X[i: i + self.batch_size]
                 batch_y = y[i: i + self.batch_size]
                 self.local_model.zero_grad()
-                out = self.local_model(batch_X)
+                out = self.local_model(batch_X).squeeze()
+                
                 loss = self.loss_fn(out, batch_y)
                 loss.backward()
                 for lp, gp in zip(self.local_model.parameters(), self.global_model.parameters()):
