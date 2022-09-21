@@ -80,7 +80,7 @@ class MCST_Evaluator:
         
         if not ucb_scores: # if at leaf node, use nn to choose move
             result, _, move = self.choose_move(board, exploring = self.training)
-            ucb_scores['t'] = (result if board.turn else -result)
+            ucb_scores['t'] = (-result if board.turn else result)
             ucb_scores['n'] = 1
             ucb_scores['c'] = {move.uci(): dict()}
             return (result, move)
@@ -94,7 +94,7 @@ class MCST_Evaluator:
         # explore new board state
         result, _ = self.explore(board, ucb_scores['c'][uci])
         board.pop()
-        ucb_scores['t'] += (result if board.turn else -result)
+        ucb_scores['t'] += -result
         ucb_scores['n'] += 1
         return (result, move)
         
