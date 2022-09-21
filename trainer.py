@@ -2,8 +2,12 @@ import torch
 import numpy as np
 from sklearn.utils import shuffle 
 
-def array_slice(a, axis, start, end, step=1):
-    return a[(slice(None),) * (axis % a.ndim) + (slice(start, end, step),)]
+
+def shuffle_arrays(arrays, set_seed=-1):
+    seed = np.random.randint(0, 2**(32 - 1) - 1) if set_seed < 0 else set_seed
+    for arr in arrays:
+        rstate = np.random.RandomState(seed)
+        rstate.shuffle(arr)
 
 class MPTrainer:
     def __init__(self, global_model, local_model, loss_fn, optimizer, device) -> None:
@@ -22,7 +26,8 @@ class MPTrainer:
         print(boards.shape, results.shape)
 
     def optimize_model(self, epochs=3):
-        self.X, self.y = shuffle(np.concatenate(self.X, axis=None), np.concatenate(self.y, axis=None))
+        X, y = np.concatenate(self.X, axis=None), np.concatenate(self.y, axis=None)
+        shuffle_arrays((X, y))
         X, y = torch.from_numpy(self.X).to(self.device), \
                torch.from_numpy(self.y).to(self.device)
         print(X.shape, y.shape)
