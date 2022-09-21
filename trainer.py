@@ -2,6 +2,9 @@ import torch
 import numpy as np
 from sklearn.utils import shuffle 
 
+def array_slice(a, axis, start, end, step=1):
+    return a[(slice(None),) * (axis % a.ndim) + (slice(start, end, step),)]
+
 class MPTrainer:
     def __init__(self, global_model, local_model, loss_fn, optimizer, device) -> None:
         self.global_model = global_model
@@ -27,7 +30,7 @@ class MPTrainer:
         for _ in range(epochs):
             running_loss = 0.0
             for i in range(0, len(self.X), self.batch_size):
-                batch_X = X[i: i + self.batch_size,:,:,:]
+                batch_X = array_slice(X, 0, i, i+self.batch_size)
                 batch_y = y[i: i + self.batch_size]
                 self.local_model.zero_grad()
                 out = self.local_model(batch_X)
