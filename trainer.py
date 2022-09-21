@@ -35,8 +35,7 @@ class MPTrainer:
         for _ in range(epochs):
             running_loss = 0.0
             for i in range(0, len(self.X), self.batch_size):
-                batch_X = array_slice(X, 0, i, i+self.batch_size)
-                print(batch_X.shape)
+                batch_X = X[i: i + self.batch_size]
                 batch_y = y[i: i + self.batch_size]
                 self.local_model.zero_grad()
                 out = self.local_model(batch_X)
