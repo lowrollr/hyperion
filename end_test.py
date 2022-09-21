@@ -27,3 +27,4 @@ board = chess.Board('k1K5/7Q/n7/4q3/8/8/8/8 b - - 0 1')
 
 print(evaluator.make_best_move(board))
 print(evaluator.make_best_move(board))
+print(evaluator.make_best_move(board))

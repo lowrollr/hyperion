@@ -170,9 +170,6 @@ class MCST_Evaluator:
     def make_best_move(self, board: chess.Board, iterations=200) -> Tuple[chess.Move, float]:
         for i in range(iterations):
             self.explore(board, self.ucb_scores)
-        for c, d in self.ucb_scores['c'].items():
-            if d:
-                print(c, d['t'] / d['n'])
         s, _, m = self.choose_expansion(board, self.ucb_scores, exploring=False, allow_null=False)
         self.training_boards.append(convert_to_nn_state(board))
         
