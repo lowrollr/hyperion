@@ -16,6 +16,7 @@ class MPTrainer:
     def store_results(self, boards, results):
         self.X.append(boards)
         self.y.append(results)
+        print(boards.shape(), results.shape())
 
     def optimize_model(self, epochs=3):
         self.X, self.y = shuffle(np.concatenate(self.X, axis=None), np.concatenate(self.y, axis=None))
