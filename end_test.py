@@ -17,7 +17,7 @@ else:
     torch.set_default_tensor_type(torch.FloatTensor)
 torch.set_default_dtype(torch.float)
 
-model = HyperionDNN()
+model = HyperionDNN().to(device)
 optimizer = torch.optim.Adam(model.parameters())
 
 evaluator = MCST_Evaluator(model, model, torch.device('cpu'), optimizer, False, 30)
