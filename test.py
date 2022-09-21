@@ -34,6 +34,7 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
                     acc_moves += moves
                     moves = 0
                     term = eval1.terminal_state(board)
+                
                     eval1.reset()
                     eval2.reset()
                     if term == 0:

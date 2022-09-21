@@ -26,7 +26,6 @@ def self_play(local_model, global_model, device, optimizer, p_id, training_games
     acc_times = 0
     start_time = time.time()
     while games_played < training_games:
-        
         move, _ = evaluator.make_best_move(board, eval_depth)
         if move is None:
             board = chess.Board()
@@ -41,7 +40,7 @@ def self_play(local_model, global_model, device, optimizer, p_id, training_games
             evaluator.reset()
         else:
             moves += 1
-            print(f'({p_id}) {moves}: {move.uci()} {round(time.time()- start_time,2)}s')
+            print(f'({p_id}) {moves}: {move.uci()}')
     avg_loss = evaluator.trainer.optimize_model(epochs=epochs)
     avg_moves = acc_moves / games_played
     avg_time = acc_times / games_played

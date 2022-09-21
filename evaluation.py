@@ -69,6 +69,10 @@ class MCST_Evaluator:
     def explore(self, board: chess.Board, ucb_scores) -> Tuple[float, chess.Move]:
         term_state = self.terminal_state(board)
         if term_state is not None:
+            
+            ucb_scores['t'] = float('inf') * term_state if term_state else term_state
+            ucb_scores['n'] = 1
+            ucb_scores['c'] = {}
             return (term_state, None)
         
         if not ucb_scores:
