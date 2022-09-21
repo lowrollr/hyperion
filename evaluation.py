@@ -30,6 +30,8 @@ class MCST_Evaluator:
         print('initialized!')
 
     def reset(self):
+        self.model_runs = 0
+        self.training_boards = []
         self.ucb_scores = dict()
 
     @staticmethod

@@ -37,6 +37,8 @@ def self_play(local_model, global_model, device, optimizer, p_id, training_games
             print(f'Process {p_id} finished game {games_played}/{training_games}')
             acc_times += time.time() - start_time
             start_time = time.time()
+            evaluator.send_training_samples()
+            evaluator.reset()
         else:
             moves += 1
             print(f'({p_id}) {moves}: {move.uci()} {round(time.time()- start_time,2)}s')
