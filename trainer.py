@@ -26,7 +26,8 @@ class MPTrainer:
         print(boards.shape, results.shape)
 
     def optimize_model(self, epochs=3):
-        X, y = np.concatenate(self.X, axis=None), np.concatenate(self.y, axis=None)
+        X, y = np.concatenate(self.X, axis=0), np.concatenate(self.y, axis=0)
+        print(X.shape, y.shape)
         shuffle_arrays((X, y))
         X, y = torch.from_numpy(X).to(self.device), \
                torch.from_numpy(y).to(self.device)
