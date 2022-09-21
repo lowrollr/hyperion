@@ -17,7 +17,12 @@ class MCST_Evaluator:
         self.local_model = local_model
         self.global_model = global_model
         self.device = device
-        self.ucb_scores = dict()
+        self.ucb_scores = {
+            't': 0,
+            'n': 0,
+            'c': {}
+        }
+
         self.training_boards = []
         self.batch_size = training_batch_size
         self.model_runs = 0
@@ -32,7 +37,11 @@ class MCST_Evaluator:
     def reset(self):
         self.model_runs = 0
         self.training_boards = []
-        self.ucb_scores = dict()
+        self.ucb_scores = {
+            't': 0,
+            'n': 0,
+            'c': {}
+        }
 
     @staticmethod
     def ucb1(total_score: float, num_visits: int, num_parent_visits: int, c_val: int = 2) -> float:
