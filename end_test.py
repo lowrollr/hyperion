@@ -20,7 +20,7 @@ torch.set_default_dtype(torch.float)
 model = HyperionDNN().to(device)
 optimizer = torch.optim.Adam(model.parameters())
 
-evaluator = MCST_Evaluator(model, model, torch.device('cpu'), optimizer, False, 30)
+evaluator = MCST_Evaluator(model, model, device, optimizer, False, 30)
 
 
 board = chess.Board('k1K5/7Q/4n3/4q3/8/8/8/8 w - - 0 0')
