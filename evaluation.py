@@ -76,7 +76,7 @@ class MCST_Evaluator:
             ucb_scores['t'] = result
             ucb_scores['n'] = 1
             ucb_scores['c'] = {}
-            return (result, None)
+            return (max(-1, result), None)
         
         if not ucb_scores: # if at leaf node, use nn to choose move
             result, _, move = self.choose_move(board, exploring = self.training)
@@ -169,9 +169,9 @@ class MCST_Evaluator:
         
         s, _, m = self.choose_expansion(board, self.ucb_scores, exploring=False, allow_null=False)
         self.training_boards.append(convert_to_nn_state(board))
-        # for c, d in self.ucb_scores['c'].items():
-        #     if d:
-        #         print(c, d['t'] / d['n'])
+        for c, d in self.ucb_scores['c'].items():
+            if d:
+                print(c, d['t'] / d['n'])
         if m:
             self.walk_tree(m.uci())
             board.push(m)
