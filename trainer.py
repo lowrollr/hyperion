@@ -18,7 +18,7 @@ class MPTrainer:
         self.y.append(results)
 
     def optimize_model(self, epochs=3):
-        self.X, self.y = shuffle(np.cat(self.X), np.cat(self.y))
+        self.X, self.y = shuffle(np.concatenate(self.X, axis=None), np.concatenate(self.y, axis=None))
         X, y = torch.from_numpy(self.X).to(self.device), \
                torch.from_numpy(self.y).to(self.device)
         total_loss = 0.0
