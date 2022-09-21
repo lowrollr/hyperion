@@ -52,7 +52,6 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
         model.load_state_dict(torch.load('./saved_models/model_best.pth'))
 
     optimizer = SharedAdam(model.parameters(), lr=1e-3)
-    procs = []
     p_id = 0
     avg_loss, avg_moves, avg_time = 0.0, 0.0, 0.0
     total_procs = (num_procs * len(devices)) - 1

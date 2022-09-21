@@ -25,7 +25,7 @@ class MPTrainer:
         self.y.append(results)
 
     def optimize_model(self, epochs=3):
-        X, y = np.concatenate(self.X, axis=0), np.concatenate(self.y, axis=0)
+        X, y = np.concatenate(self.X, axis=0), np.concatenate(self.y, axis=None)
         shuffle_arrays((X, y))
         X, y = torch.from_numpy(X).to(self.device), \
                torch.from_numpy(y).to(self.device)
@@ -47,5 +47,4 @@ class MPTrainer:
                 running_loss += loss.item() * batch_X.size(0)
             
             total_loss += running_loss
-
         return total_loss / X.size(0)
