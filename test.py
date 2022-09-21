@@ -78,8 +78,8 @@ def mp_selfplay(candidate_model, devices, num_games, depth, num_procs):
             draws = sum(d)
             avg_moves = np.mean(a)
             df = new_wins - old_wins
-            if df / (num_games * num_procs) >= 0.05:
-                torch.save(candidate_model.state_dict(), './saved_models/model_best.pth')
+        if df / (num_games * num_procs) >= 0.05:
+            torch.save(candidate_model.state_dict(), './saved_models/model_best.pth')
     else:
         torch.save(candidate_model.state_dict(), './saved_models/model_best.pth')
     

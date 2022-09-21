@@ -71,6 +71,6 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
         results = pool.starmap(self_play, args)
         loss, moves, times = zip(*results)
         avg_loss, avg_moves, avg_time = np.mean(loss), np.mean(moves), np.mean(times)
-        # save the model
-        torch.save(model.state_dict(), './saved_models/model_last.pth')
+    # save the model
+    torch.save(model.state_dict(), './saved_models/model_last.pth')
     return model, (avg_loss, avg_moves, avg_time)
