@@ -7,9 +7,10 @@ from nn import convert_to_nn_state
 import numpy as np
 import torch
 import torch.nn as nn
-
+from sys import maxsize
 from trainer import MPTrainer
 
+ALMOST_INF = maxsize
 
 class MCST_Evaluator:
     def __init__(self, local_model, global_model, device, optimizer, training = True, training_batch_size=20):
@@ -72,11 +73,11 @@ class MCST_Evaluator:
 
         if term_state is not None:
             term_state = -term_state if board.turn else term_state
-            result = float('inf') * term_state if term_state else term_state
+            result = ALMOST_INF * term_state if term_state else term_state
             ucb_scores['t'] = result
             ucb_scores['n'] = 1
             ucb_scores['c'] = {}
-            return (max(-1, result), None)
+            return (result, None)
         
         if not ucb_scores: # if at leaf node, use nn to choose move
             result, _, move = self.choose_move(board, exploring = self.training)
@@ -100,13 +101,13 @@ class MCST_Evaluator:
         
 
     def choose_expansion(self, board: chess.Board, ucb_scores, exploring=True, allow_null=True) -> Tuple[float, int, chess.Move]:
-        best_move = (float('-inf'), 0, None)
+        best_move = (-ALMOST_INF, 0, None)
         moves = []
         move_ps = []
         for i,move in enumerate(board.legal_moves):
             uci = move.uci()
             
-            score = float('inf')
+            score = ALMOST_INF
             child_ucb = ucb_scores['c'].get(uci)
             if child_ucb:
                 score = self.ucb1(child_ucb['t'], child_ucb['n'], ucb_scores['n'] + 1)
