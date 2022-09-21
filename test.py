@@ -20,7 +20,7 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
             player1, player2 = model1, model2
         eval1 = MCST_Evaluator(player1, None, device1, None, training=False)
         eval2 = MCST_Evaluator(player2, None, device2, None, training=False)
-        
+        moves = 0
         board = chess.Board()
         while True:
             with torch.no_grad():
