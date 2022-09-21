@@ -72,7 +72,7 @@ class MCST_Evaluator:
         term_state = self.terminal_state(board)
 
         if term_state is not None:
-            result = ALMOST_INF * term_state
+            result = abs(ALMOST_INF * term_state)
             ucb_scores['t'] = result
             ucb_scores['n'] = 1
             ucb_scores['c'] = {}
