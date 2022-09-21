@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from sklearn.utils import shuffle 
 
 class MPTrainer:
@@ -17,7 +18,7 @@ class MPTrainer:
         self.y.extend(results)
 
     def optimize_model(self, epochs=3):
-        self.X, self.y = shuffle(self.X, self.y)
+        self.X, self.y = shuffle(np.array(self.X), np.array(self.y))
         X, y = torch.from_numpy(self.X).to(self.device), \
                torch.from_numpy(self.y).to(self.device)
         total_loss = 0.0
