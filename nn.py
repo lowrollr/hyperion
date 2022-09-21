@@ -59,7 +59,8 @@ class ResidualLayer(nn.Module):
             nn.BatchNorm2d(out_c)
         ).to()
     def forward(self, x):
-        return nn.functional.relu(self.block(x) + x)
+        x = nn.functional.relu(self.block(x) + x)
+        return x
 
 class ConvolutionalLayer(nn.Module):
     def __init__(self, in_c, out_c, k_size=3, padding=1) -> None:
@@ -70,7 +71,8 @@ class ConvolutionalLayer(nn.Module):
             nn.ReLU()
         )
     def forward(self, x):
-        return self.block(x)
+        x = self.block(x)
+        return x
     
 class HyperionDNN(nn.Module):
     
@@ -105,7 +107,8 @@ class HyperionDNN(nn.Module):
         x = self.conv2(x)
         x = self.fl1(x)
         x = nn.functional.relu(self.lin1(x))
-        return self.tanh(self.lin2(x))
+        x = self.tanh(self.lin2(x))
+        return x
     
     @property
     def device(self):
