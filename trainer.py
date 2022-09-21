@@ -38,8 +38,8 @@ class MPTrainer:
                 batch_y = y[i: i + self.batch_size]
                 self.local_model.zero_grad()
                 out = self.local_model(batch_X)
-                print(out.shape, batch_y.shape)
-                    
+                
+                batch_y.unsqueeze(0)    
                 loss = self.loss_fn(out, batch_y)
                 loss.backward()
                 for lp, gp in zip(self.local_model.parameters(), self.global_model.parameters()):
