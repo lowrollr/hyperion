@@ -33,9 +33,6 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
                 acc_moves += moves
                 moves = 0
                 term = eval1.terminal_state(board)
-            
-                eval1.reset()
-                eval2.reset()
                 if term == 0:
                     draws += 1
                 elif term == 1:
@@ -51,6 +48,10 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
                 break
             else:
                 moves += 1
+        del eval1
+        del eval2
+        del player1
+        del player2
         game_num += 1
     avg_moves = acc_moves / num_games
     return (new_wins, old_wins, draws, avg_moves)
