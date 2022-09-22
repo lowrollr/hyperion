@@ -73,4 +73,5 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
         avg_loss, avg_moves, avg_time = np.mean(loss), np.mean(moves), np.mean(times)
     # save the model
     torch.save(model.state_dict(), './saved_models/model_last.pth')
+    del optimizer
     return model, (avg_loss, avg_moves, avg_time)
