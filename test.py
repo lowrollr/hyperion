@@ -48,10 +48,6 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
                 break
             else:
                 moves += 1
-        del eval1
-        del eval2
-        del player1
-        del player2
         game_num += 1
     avg_moves = acc_moves / num_games
     return (new_wins, old_wins, draws, avg_moves)
@@ -82,6 +78,4 @@ def mp_selfplay(candidate_model, devices, num_games, depth, num_procs):
             torch.save(candidate_model.state_dict(), './saved_models/model_best.pth')
     else:
         torch.save(candidate_model.state_dict(), './saved_models/model_best.pth')
-    del candidate_model
-    del best_model
     return (new_wins, old_wins, draws, avg_moves)

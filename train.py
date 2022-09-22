@@ -65,13 +65,13 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
                 l_model = t_model
                 if i != 0:
                     l_model = deepcopy(t_model)
-                    print(f'{p_id}: Transferred model to {device}')
                 args.append((l_model, model, device, optimizer, p_id, epoch_games, depth, num_epochs))
                 p_id += 1
         results = pool.starmap(self_play, args)
+        del args
         loss, moves, times = zip(*results)
         avg_loss, avg_moves, avg_time = np.mean(loss), np.mean(moves), np.mean(times)
     # save the model
     torch.save(model.state_dict(), './saved_models/model_last.pth')
-    del optimizer
+    
     return model, (avg_loss, avg_moves, avg_time)
