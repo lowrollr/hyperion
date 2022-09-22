@@ -82,5 +82,6 @@ def mp_selfplay(candidate_model, devices, num_games, depth, num_procs):
             torch.save(candidate_model.state_dict(), './saved_models/model_best.pth')
     else:
         torch.save(candidate_model.state_dict(), './saved_models/model_best.pth')
-    
+    del candidate_model
+    del best_model
     return (new_wins, old_wins, draws, avg_moves)
