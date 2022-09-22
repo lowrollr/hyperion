@@ -5,7 +5,7 @@ import argparse
 
 def memstats(devices):
     for device in devices:
-        print(device, torch.cuda.memory_stats(device))
+        print(device, torch.cuda.memory_summary(device))
 
 def training_loop(devices):
     while True:
