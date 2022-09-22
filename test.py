@@ -23,35 +23,34 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
         moves = 0
         board = chess.Board()
         while True:
-            with torch.no_grad():
-                m = None
-                if board.turn:
-                    m, _ = eval1.make_best_move(board, depth)          
-                else:
-                    m, _ = eval2.make_best_move(board, depth)     
-                
-                if m is None:
-                    acc_moves += moves
-                    moves = 0
-                    term = eval1.terminal_state(board)
-                
-                    eval1.reset()
-                    eval2.reset()
-                    if term == 0:
-                        draws += 1
-                    elif term == 1:
-                        if new_is_white:
-                            new_wins += 1
-                        else:
-                            old_wins += 1
-                    elif term == -1:
-                        if new_is_white:
-                            old_wins += 1
-                        else:
-                            new_wins += 1
-                    break
-                else:
-                    moves += 1
+            m = None
+            if board.turn:
+                m, _ = eval1.make_best_move(board, depth)          
+            else:
+                m, _ = eval2.make_best_move(board, depth)     
+            
+            if m is None:
+                acc_moves += moves
+                moves = 0
+                term = eval1.terminal_state(board)
+            
+                eval1.reset()
+                eval2.reset()
+                if term == 0:
+                    draws += 1
+                elif term == 1:
+                    if new_is_white:
+                        new_wins += 1
+                    else:
+                        old_wins += 1
+                elif term == -1:
+                    if new_is_white:
+                        old_wins += 1
+                    else:
+                        new_wins += 1
+                break
+            else:
+                moves += 1
         game_num += 1
     avg_moves = acc_moves / num_games
     return (new_wins, old_wins, draws, avg_moves)
