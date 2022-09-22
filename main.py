@@ -10,7 +10,6 @@ def memstats(devices):
 def training_loop(devices):
     while True:
         print("Starting training...")
-        memstats(devices)
         trained_model, (avg_loss, avg_moves, avg_time) = mp_train(devices, args.epoch_games, args.training_depth, args.training_processes, args.num_epochs)
         print('Finished training epoch, beginning versus play...')
         memstats(devices)
