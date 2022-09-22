@@ -57,7 +57,7 @@ class ResidualLayer(nn.Module):
             nn.ReLU(),
             nn.Conv2d(out_c, out_c, kernel_size=(3,3), padding=1, bias=False),
             nn.BatchNorm2d(out_c)
-        ).to()
+        )
     def forward(self, x):
         x = nn.functional.relu(self.block(x) + x)
         return x
@@ -84,7 +84,6 @@ class HyperionDNN(nn.Module):
         for _ in range(residual_layers):
             r = ResidualLayer(256, 256)
             self.residual_layers.append(r)
-            del r
 
         self.conv2 = ConvolutionalLayer(256, 1, k_size=1, padding=0)
         self.lin1 = nn.Linear(64, 64)
@@ -99,7 +98,6 @@ class HyperionDNN(nn.Module):
         for r in self.residual_layers:
             new_residual_layers.append(r.to(self.device))
         self.residual_layers = new_residual_layers
-        del new_residual_layers
         
     def forward(self, x, **kwargs):
         x = self.conv1(x)
