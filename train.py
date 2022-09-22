@@ -68,7 +68,6 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
                 
                 args.append((l_model, model, device, optimizer, p_id, epoch_games, depth, num_epochs))
                 p_id += 1
-            del t_model
         results = pool.starmap(self_play, args)
         loss, moves, times = zip(*results)
         avg_loss, avg_moves, avg_time = np.mean(loss), np.mean(moves), np.mean(times)

@@ -3,23 +3,20 @@ from test import mp_selfplay
 import torch
 import argparse
 
-def memstats(devices):
-    for device in devices:
-        print(device, torch.cuda.memory_summary(device))
+
 
 def training_loop(devices):
-    while True:
-        print("Starting training...")
-        trained_model, (avg_loss, avg_moves, avg_time) = mp_train(devices, args.epoch_games, args.training_depth, args.training_processes, args.num_epochs)
-        print('Finished training epoch, beginning versus play...')
-        memstats(devices)
-        (new_wins, old_wins, draws, t_avg_moves) = mp_selfplay(trained_model, devices, args.testing_games, args.testing_depth, args.testing_processes)
-        
-        print('Finished versus play...')
-        torch.cuda.empty_cache()
-        memstats(devices)
-        with open('resutls.csv', mode='a') as f:
-            f.write(','.join([str(x) for x in [avg_loss, avg_moves, avg_time, new_wins, old_wins, draws, t_avg_moves]]) + '\n')
+    print("Starting training...")
+    trained_model, (avg_loss, avg_moves, avg_time) = mp_train(devices, args.epoch_games, args.training_depth, args.training_processes, args.num_epochs)
+    print('Finished training epoch, beginning versus play...')
+    
+    (new_wins, old_wins, draws, t_avg_moves) = mp_selfplay(trained_model, devices, args.testing_games, args.testing_depth, args.testing_processes)
+    
+    print('Finished versus play...')
+    torch.cuda.empty_cache()
+    
+    with open('resutls.csv', mode='a') as f:
+        f.write(','.join([str(x) for x in [avg_loss, avg_moves, avg_time, new_wins, old_wins, draws, t_avg_moves]]) + '\n')
 
 
 
