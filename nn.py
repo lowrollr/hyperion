@@ -98,6 +98,7 @@ class HyperionDNN(nn.Module):
         for r in self.residual_layers:
             new_residual_layers.append(r.to(self.device))
         self.residual_layers = new_residual_layers
+        del new_residual_layers
         
         
     def forward(self, x, **kwargs):
