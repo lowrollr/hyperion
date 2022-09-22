@@ -16,7 +16,7 @@ def training_loop(devices):
 
 
 
-
+            
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Hyperion Chess Engine Training')
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     else:
         torch.set_default_tensor_type(torch.FloatTensor)
     torch.set_default_dtype(torch.float)
-    # torch.multiprocessing.set_start_method('spawn')
+    torch.multiprocessing.set_start_method('spawn')
     training_loop(devices)
     
 
