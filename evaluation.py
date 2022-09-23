@@ -36,6 +36,7 @@ class MCST_Evaluator:
         self.model_runs = 0
         self.training_boards = []
         self.ucb_scores = dict()
+        self.boards = dict()
 
     @staticmethod
     def ucb1(total_score: float, num_visits: int, num_parent_visits: int, c_val: int = 2) -> float:
@@ -45,20 +46,21 @@ class MCST_Evaluator:
         
 
     def terminal_state(self, board: chess.Board, hash: str = None) -> Optional[int]:
-        if not hash:
-            hash = self.game_hash(board)
+        if hash is None:
+            hash = board.fen()
         if board.is_checkmate():
             return -1 if board.turn else 1
         elif board.is_fifty_moves() or self.boards[hash] == 3:
             return 0
-        elif board.is_stalemate():
+        elif board.is_stalemate() or \
+            (board.has_insufficient_material(1) and board.has_insufficient_material(0)):
             return 0
         else:
             return None
     
     @staticmethod
     def game_hash(board: chess.Board) -> string:
-        return str(board)
+        return board.board_fen(promoted=False)
 
     def send_training_samples(self, game_result):
         self.trainer.store_results(

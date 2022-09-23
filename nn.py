@@ -43,6 +43,8 @@ def convert_to_nn_state(board: chess.Board, reps):
         v = PIECE_ID_MAP[(piece.piece_type, piece.color)]
         r, c = sq // 8, sq % 8
         data_tensor[v][r][c] = 1
+    # so we can hash 
+    data_tensor.flags.writeable = False
     return data_tensor
 
 class ResidualLayer(nn.Module):
