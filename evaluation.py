@@ -187,12 +187,13 @@ class MCST_Evaluator:
             _, _, reps = self.explore(board, self.ucb_scores)
         s, _, m = self.choose_expansion(board, self.ucb_scores, exploring=False, allow_null=False)
         self.training_boards.append(convert_to_nn_state(board, reps))
-
+        
         #should probably kill all of the zero entries in the dictionary or we'll run out of memory
         self.boards = defaultdict(lambda: 0, {k:v for k, v in self.boards.items() if v != 0})
 
         if m:
             self.walk_tree(m.uci())
             board.push(m)
+            self.boards[self.game_hash(board)] += 1
         
         return (m, s)
