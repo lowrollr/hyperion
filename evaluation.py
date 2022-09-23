@@ -105,12 +105,13 @@ class MCST_Evaluator:
             ucb_scores['c'][uci] = {}
         board.push(move)
         # explore new board state
-        result, _ = self.explore(board, ucb_scores['c'][uci])
+        result, _, _ = self.explore(board, ucb_scores['c'][uci])
         board.pop()
         ucb_scores['t'] += -result
         ucb_scores['n'] += 1
         self.boards[board_hash] -= 1
-        return (-result, move)
+        reps = self.boards[board_hash]
+        return (-result, move, reps)
         
 
     def choose_expansion(self, board: chess.Board, ucb_scores, exploring=True, allow_null=True) -> Tuple[float, int, chess.Move]:
@@ -178,11 +179,12 @@ class MCST_Evaluator:
                 return res
         
     def make_best_move(self, board: chess.Board, iterations=200) -> Tuple[chess.Move, float]:
+        reps = 0
         for i in range(iterations):
-            self.explore(board, self.ucb_scores)
+            _, _, reps = self.explore(board, self.ucb_scores)
         s, _, m = self.choose_expansion(board, self.ucb_scores, exploring=False, allow_null=False)
-        self.training_boards.append(convert_to_nn_state(board))
-        
+        self.training_boards.append(convert_to_nn_state(board), reps)
+
         #should probably kill all of the zero entries in the dictionary or we'll run out of memory
         self.boards = {k:v for k, v in self.boards.items() if v != 0}
 

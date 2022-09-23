@@ -21,7 +21,7 @@ PIECE_ID_MAP = {
 }
 
 
-def convert_to_nn_state(board: chess.Board, reps: int):
+def convert_to_nn_state(board: chess.Board, reps: int = None):
     # 12 piece planes (6 piece types per player)
     data_tensor = np.zeros(shape=(20,8,8), dtype=np.float32)
     # num of halfmoves (for fifty move rule)
