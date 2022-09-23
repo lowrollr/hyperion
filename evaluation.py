@@ -85,7 +85,8 @@ class MCST_Evaluator:
             ucb_scores['t'] = result
             ucb_scores['n'] = 1
             ucb_scores['c'] = {}
-            return (result, None)
+            self.boards[board_hash] -= 1
+            return (result, None, reps - 1)
         
         if not ucb_scores: # if at leaf node, use nn to choose move
             result, _, move = self.choose_move(board, reps, exploring = self.training)
@@ -110,8 +111,7 @@ class MCST_Evaluator:
         ucb_scores['t'] += -result
         ucb_scores['n'] += 1
         self.boards[board_hash] -= 1
-        reps = self.boards[board_hash]
-        return (-result, move, reps)
+        return (-result, move, reps - 1)
         
 
     def choose_expansion(self, board: chess.Board, ucb_scores, exploring=True, allow_null=True) -> Tuple[float, int, chess.Move]:
