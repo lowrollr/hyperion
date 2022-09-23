@@ -184,7 +184,7 @@ class MCST_Evaluator:
         for _ in range(iterations):
             _, _, reps = self.explore(board, self.ucb_scores)
         s, _, m = self.choose_expansion(board, self.ucb_scores, exploring=False, allow_null=False)
-        self.training_boards.append(convert_to_nn_state(board), reps)
+        self.training_boards.append(convert_to_nn_state(board, reps))
 
         #should probably kill all of the zero entries in the dictionary or we'll run out of memory
         self.boards = {k:v for k, v in self.boards.items() if v != 0}
