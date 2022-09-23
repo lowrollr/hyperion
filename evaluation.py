@@ -189,7 +189,7 @@ class MCST_Evaluator:
         self.training_boards.append(convert_to_nn_state(board, reps))
 
         #should probably kill all of the zero entries in the dictionary or we'll run out of memory
-        self.boards = {k:v for k, v in self.boards.items() if v != 0}
+        self.boards = defaultdict(lambda: 0, {k:v for k, v in self.boards.items() if v != 0})
 
         if m:
             self.walk_tree(m.uci())
