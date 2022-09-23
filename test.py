@@ -62,6 +62,7 @@ def mp_selfplay(candidate_model, devices, num_games, depth, num_procs):
     old_wins = 0
     draws = 0
     avg_moves = 0
+    candidate_model = candidate_model.to(devices[-1])
     best_model = HyperionDNN().to(devices[0])
     if os.path.exists('./saved_models/model_best.pth'):
         best_model.load_state_dict(torch.load('./saved_models/model_best.pth'))
