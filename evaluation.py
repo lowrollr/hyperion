@@ -97,7 +97,8 @@ class MCST_Evaluator:
             ucb_scores['t'] = adj_result
             ucb_scores['n'] = 1
             ucb_scores['c'] = {move.uci(): dict()}
-            return (adj_result, move)
+            self.boards[board_hash] -= 1
+            return (adj_result, move, reps - 1)
 
         # otherwise choose best expansion to explore
         _, _, move = self.choose_expansion(board, ucb_scores, exploring = self.training)
@@ -180,7 +181,7 @@ class MCST_Evaluator:
         
     def make_best_move(self, board: chess.Board, iterations=200) -> Tuple[chess.Move, float]:
         reps = 0
-        for i in range(iterations):
+        for _ in range(iterations):
             _, _, reps = self.explore(board, self.ucb_scores)
         s, _, m = self.choose_expansion(board, self.ucb_scores, exploring=False, allow_null=False)
         self.training_boards.append(convert_to_nn_state(board), reps)
