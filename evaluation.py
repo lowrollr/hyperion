@@ -1,14 +1,15 @@
 
 from copy import deepcopy
 from random import choice, choices
+import string
 from typing import List, Optional, Tuple
 import chess
 from nn import convert_to_nn_state
 import numpy as np
 import torch
-import torch.nn as nn
 from sys import maxsize
 from trainer import MPTrainer
+from collections import defaultdict
 
 ALMOST_INF = maxsize
 
@@ -19,7 +20,7 @@ class MCST_Evaluator:
         self.global_model = global_model
         self.device = device
         self.ucb_scores = dict()
-
+        self.boards = defaultdict(lambda: 0)
         self.training_boards = []
         self.batch_size = training_batch_size
         self.model_runs = 0
@@ -43,16 +44,21 @@ class MCST_Evaluator:
         return avg_score + ucb_prod
         
 
-    @staticmethod
-    def terminal_state(board: chess.Board) -> Optional[int]:
+    def terminal_state(self, board: chess.Board, hash: str = None) -> Optional[int]:
+        if not hash:
+            hash = self.game_hash(board)
         if board.is_checkmate():
             return -1 if board.turn else 1
-        elif board.is_fifty_moves() or board.is_repetition() or board.is_fivefold_repetition():
+        elif board.is_fifty_moves() or self.boards[hash] == 3:
             return 0
         elif board.is_stalemate():
             return 0
         else:
             return None
+    
+    @staticmethod
+    def game_hash(board: chess.Board) -> string:
+        return str(board)
 
     def send_training_samples(self, game_result):
         self.trainer.store_results(
@@ -69,7 +75,10 @@ class MCST_Evaluator:
         self.ucb_scores = self.ucb_scores['c'][move]
 
     def explore(self, board: chess.Board, ucb_scores) -> Tuple[float, chess.Move]:
-        term_state = self.terminal_state(board)
+        board_hash = self.game_hash(board)
+        self.boards[board_hash] += 1
+        reps = self.boards[board_hash]
+        term_state = self.terminal_state(board, board_hash)
 
         if term_state is not None:
             result = abs(ALMOST_INF * term_state)
@@ -79,7 +88,7 @@ class MCST_Evaluator:
             return (result, None)
         
         if not ucb_scores: # if at leaf node, use nn to choose move
-            result, _, move = self.choose_move(board, exploring = self.training)
+            result, _, move = self.choose_move(board, reps, exploring = self.training)
             # score eval was calculated when turn was opposite what it is now
             # if board.turn now is WHITE, score was calculated with BLACK to play
             #   so it will be inverted twice (once since NN output is from white's pov, once because it was black's turn but now it's white's)
@@ -100,6 +109,7 @@ class MCST_Evaluator:
         board.pop()
         ucb_scores['t'] += -result
         ucb_scores['n'] += 1
+        self.boards[board_hash] -= 1
         return (-result, move)
         
 
@@ -129,14 +139,14 @@ class MCST_Evaluator:
         else:
             return choices(moves, move_ps, k=1)[0]
 
-    def choose_move(self, board: chess.Board, exploring = False) -> Tuple[float, int, chess.Move]:
+    def choose_move(self, board: chess.Board, reps: int, exploring = False) -> Tuple[float, int, chess.Move]:
         legal_moves = list(board.legal_moves)
         board_states = []
 
 
         for move in legal_moves:
             board.push(move)
-            board_states.append(convert_to_nn_state(board))
+            board_states.append(convert_to_nn_state(board, reps))
             board.pop()
 
         input = np.stack(board_states, axis=0)
@@ -173,6 +183,9 @@ class MCST_Evaluator:
         s, _, m = self.choose_expansion(board, self.ucb_scores, exploring=False, allow_null=False)
         self.training_boards.append(convert_to_nn_state(board))
         
+        #should probably kill all of the zero entries in the dictionary or we'll run out of memory
+        self.boards = {k:v for k, v in self.boards.items() if v != 0}
+
         if m:
             self.walk_tree(m.uci())
             board.push(m)

@@ -21,13 +21,12 @@ PIECE_ID_MAP = {
 }
 
 
-def convert_to_nn_state(board: chess.Board):
+def convert_to_nn_state(board: chess.Board, reps: int):
     # 12 piece planes (6 piece types per player)
-    data_tensor = np.zeros(shape=(21,8,8), dtype=np.float32)
-    if board.is_fivefold_repetition():
-        data_tensor[12] = 1
-    if board.is_fifty_moves():
-        data_tensor[13] = 1
+    data_tensor = np.zeros(shape=(20,8,8), dtype=np.float32)
+    # num of halfmoves (for fifty move rule)
+    data_tensor[12] = np.unpackbits(np.array([board.halfmove_clock], dtype=np.uint8), count=8)
+    data_tensor[13] = np.unpackbits(np.array([reps], dtype=np.uint8), count=8)
     if board.has_kingside_castling_rights(1):
         data_tensor[14] = 1
     if board.has_queenside_castling_rights(1):
@@ -38,10 +37,8 @@ def convert_to_nn_state(board: chess.Board):
         data_tensor[17] = 1
     if board.has_legal_en_passant():
         data_tensor[18] = 1
-    if board.is_repetition():
-        data_tensor[19] = 1
     if board.turn:
-        data_tensor[20] = 1
+        data_tensor[19] = 1
     for sq, piece in board.piece_map().items():
         v = PIECE_ID_MAP[(piece.piece_type, piece.color)]
         r, c = sq // 8, sq % 8
@@ -78,7 +75,7 @@ class HyperionDNN(nn.Module):
     
     def __init__(self, residual_layers=20):
         super().__init__()
-        self.conv1 = ConvolutionalLayer(21, 256)
+        self.conv1 = ConvolutionalLayer(20, 256)
         
         self.residual_layers = []
         for _ in range(residual_layers):
