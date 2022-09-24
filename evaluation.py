@@ -14,23 +14,16 @@ from collections import defaultdict
 ALMOST_INF = maxsize
 
 class MCST_Evaluator:
-    def __init__(self, local_model, global_model, device, optimizer, training = True, training_batch_size=20):
+    def __init__(self, local_model, device, training = True):
         
         self.local_model = local_model
-        self.global_model = global_model
         self.device = device
         self.ucb_scores = dict()
         self.boards = defaultdict(lambda: 0)
         self.boards[self.game_hash(chess.Board())] += 1
         self.training_boards = []
-        self.batch_size = training_batch_size
         self.model_runs = 0
-        if training:
-            self.trainer = MPTrainer(self.global_model, self.local_model, torch.nn.functional.l1_loss, optimizer, device)
-            self.training = True
-        else:
-            self.trainer = None
-            self.training = False
+        self.training = training
         print('initialized!')
 
     def reset(self):
@@ -63,14 +56,7 @@ class MCST_Evaluator:
     @staticmethod
     def game_hash(board: chess.Board) -> string:
         return board.board_fen(promoted=False)
-
-    def send_training_samples(self, game_result):
-        self.trainer.store_results(
-            np.stack(self.training_boards, axis=0), 
-            np.full(len(self.training_boards), game_result, dtype=np.float32)
-        )
   
-
     def get_nn_score(self, board_states: torch.Tensor):
         res = self.local_model(board_states)
         return res
