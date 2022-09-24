@@ -16,10 +16,10 @@ import numpy as np
 
 
 
-def self_play(local_model, global_model, device, optimizer, p_id, training_games=1, eval_depth=200, epochs=3):
+def self_play(local_model, device, p_id, training_games=1, eval_depth=200, epochs=3):
     acc_moves = 0
     print(f'{p_id}: Begin training games on {device}')
-    evaluator = MCST_Evaluator(local_model, global_model, device, training=True, optimizer=optimizer, training_batch_size=40)
+    evaluator = MCST_Evaluator(local_model, device, training=True)
     board = chess.Board()
     games_played = 0
     moves = 0
@@ -68,7 +68,7 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
             t_model = deepcopy(model).to(device)
             t_model.migrate_submodules()
             for _ in range(num_procs - (1 if d_ == 0 else 0)):
-                args.append((model, model, device, optimizer, p_id, epoch_games, depth, num_epochs))
+                args.append((t_model, device, p_id, epoch_games, depth, num_epochs))
                 p_id += 1
         results = pool.starmap(self_play, args)
         train_X, train_y, moves, times = zip(*results)
