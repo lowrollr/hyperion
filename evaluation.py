@@ -171,7 +171,7 @@ class MCST_Evaluator:
                 res =  (scores[index], index, legal_moves[index])
                 return res
         
-    def make_best_move(self, board: chess.Board, iterations=200) -> Tuple[chess.Move, float]:
+    def make_best_move(self, board: chess.Board, iterations=200) -> chess.Move:
         reps = 0
         for _ in range(iterations):
             _, _, reps = self.explore(board, self.ucb_scores)
@@ -188,4 +188,4 @@ class MCST_Evaluator:
             board.push(m)
             self.boards[self.game_hash(board)] += 1
         
-        return (m, s)
+        return m

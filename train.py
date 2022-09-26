@@ -37,7 +37,7 @@ def self_play(local_model, device, p_id, training_games=1, eval_depth=200, epoch
     train_X = []
     train_y = []
     while games_played < training_games:
-        move, _ = evaluator.make_best_move(board, eval_depth)
+        move = evaluator.make_best_move(board, eval_depth)
         if move is None:
             game_result = evaluator.terminal_state(board)
             board = chess.Board()
