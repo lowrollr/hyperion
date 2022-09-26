@@ -180,7 +180,6 @@ class MCST_Evaluator:
         m = max(self.ucb_scores, key=lambda x: self.ucb_scores[x]['t'])
 
         self.training_boards.append(convert_to_nn_state(board, reps))
-
         #should probably kill all of the zero entries in the dictionary or we'll run out of memory
         self.boards = defaultdict((lambda: 0), {k:v for k, v in self.boards.items() if v != 0})
 

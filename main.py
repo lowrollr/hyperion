@@ -20,12 +20,8 @@ def training_loop(devices):
         f.write(','.join([str(x) for x in [avg_loss, avg_moves, avg_time, new_wins, old_wins, draws, t_avg_moves]]) + '\n')
 
 
-def move_hash(move: chess.Move):
-    return move.uci()
-            
 
 if __name__ == '__main__':
-    chess.Move.__hash__ = move_hash
     parser = argparse.ArgumentParser(description='Hyperion Chess Engine Training')
     parser.add_argument('--epoch_games', type=int, default=100, required=False)
     parser.add_argument('--testing_games', type=int, default=100, required=False)

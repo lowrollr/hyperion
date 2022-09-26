@@ -72,9 +72,9 @@ class ConvolutionalLayer(nn.Module):
     def forward(self, x):
         x = self.block(x)
         return x
+
     
 class HyperionDNN(nn.Module):
-    
     def __init__(self, residual_layers=20):
         super().__init__()
         self.conv1 = ConvolutionalLayer(20, 256)
