@@ -177,7 +177,7 @@ class MCST_Evaluator:
             _, _, reps = self.explore(board, self.ucb_scores)
         # choose expansion with greatest N value
 
-        m = max(self.ucb_scores, key=lambda x: self.ucb_scores[x]['t'])
+        m = max(self.ucb_scores['c'], key=lambda x: self.ucb_scores[x]['n'])
 
         self.training_boards.append(convert_to_nn_state(board, reps))
         #should probably kill all of the zero entries in the dictionary or we'll run out of memory
