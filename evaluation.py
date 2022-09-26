@@ -61,7 +61,7 @@ class MCST_Evaluator:
         res = self.local_model(board_states)
         return res
     
-    def walk_tree(self, move: str):
+    def walk_tree(self, move: chess.Move):
         self.ucb_scores = self.ucb_scores['c'][move]
 
     def explore(self, board: chess.Board, ucb_scores) -> Tuple[float, chess.Move]:
@@ -79,25 +79,28 @@ class MCST_Evaluator:
             return (result, None, reps - 1)
         
         if not ucb_scores: # if at leaf node, use nn to choose move
-            result, _, move = self.choose_move(board, reps, exploring = self.training)
+            ucb_scores['c'] = {}
+            # IMPORTANT: this should be the only place we iterate over legal moves, prevents redundant work
+            for move in board.legal_moves:
+                ucb_scores['c'][move] = {}
+            
+            result, _, move = self.choose_move(board, ucb_scores, reps, exploring = self.training)
             # score eval was calculated when turn was opposite what it is now
             # if board.turn now is WHITE, score was calculated with BLACK to play
             #   so it will be inverted twice (once since NN output is from white's pov, once because it was black's turn but now it's white's)
             adj_result = (result if board.turn else -result) 
             ucb_scores['t'] = adj_result
             ucb_scores['n'] = 1
-            ucb_scores['c'] = {move.uci(): dict()}
             self.boards[board_hash] -= 1
             return (adj_result, move, reps - 1)
 
         # otherwise choose best expansion to explore
         _, _, move = self.choose_expansion(board, ucb_scores, exploring = self.training)
-        uci = move.uci()
-        if not ucb_scores['c'].get(uci):
-            ucb_scores['c'][uci] = {}
+        
+        
         board.push(move)
         # explore new board state
-        result, _, _ = self.explore(board, ucb_scores['c'][uci])
+        result, _, _ = self.explore(board, ucb_scores['c'][move])
         board.pop()
         ucb_scores['t'] += -result
         ucb_scores['n'] += 1
@@ -109,11 +112,10 @@ class MCST_Evaluator:
         best_move = (-ALMOST_INF, 0, None)
         moves = []
         move_ps = []
-        for i,move in enumerate(board.legal_moves):
-            uci = move.uci()
+        for i,move in enumerate(ucb_scores['c'].keys()):
             
             score = ALMOST_INF
-            child_ucb = ucb_scores['c'].get(uci)
+            child_ucb = ucb_scores['c'].get(move)
             if child_ucb:
                 score = self.ucb1(child_ucb['t'], child_ucb['n'], ucb_scores['n'] + 1)
             elif allow_null: # if move doesn't have a score yet, choose that one
@@ -131,8 +133,8 @@ class MCST_Evaluator:
         else:
             return choices(moves, move_ps, k=1)[0]
 
-    def choose_move(self, board: chess.Board, reps: int, exploring = False) -> Tuple[float, int, chess.Move]:
-        legal_moves = list(board.legal_moves)
+    def choose_move(self, board: chess.Board, ucb_scores, reps: int, exploring = False) -> Tuple[float, int, chess.Move]:
+        legal_moves = ucb_scores['c'].keys()
         board_states = []
 
 
@@ -173,14 +175,17 @@ class MCST_Evaluator:
         reps = 0
         for _ in range(iterations):
             _, _, reps = self.explore(board, self.ucb_scores)
-        s, _, m = self.choose_expansion(board, self.ucb_scores, exploring=False, allow_null=False)
+        # choose expansion with greatest N value
+
+        m = max(self.ucb_scores, key=lambda x: self.ucb_scores[x]['t'])
+
         self.training_boards.append(convert_to_nn_state(board, reps))
 
         #should probably kill all of the zero entries in the dictionary or we'll run out of memory
         self.boards = defaultdict((lambda: 0), {k:v for k, v in self.boards.items() if v != 0})
 
         if m:
-            self.walk_tree(m.uci())
+            self.walk_tree(m)
             board.push(m)
             self.boards[self.game_hash(board)] += 1
         
