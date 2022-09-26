@@ -1,7 +1,6 @@
 # routine to continuously train and update the neur
 from copy import deepcopy
 from re import M
-from turtle import back
 import torch.multiprocessing as mp
 from evaluation import MCST_Evaluator
 from shared_adam import SharedAdam
@@ -125,7 +124,7 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
         results = pool.starmap(self_play, args)
         train_X, train_y, moves, times = zip(*results)
         avg_moves, avg_time = np.mean(moves), np.mean(times)
-        
+
     if train_X:
         mp_optimize(train_X, train_y, devices, model, num_epochs)
         # save the model
