@@ -47,6 +47,7 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
                         new_wins += 1
                 break
             else:
+                print(f'{m.uci()}')
                 moves += 1
         game_num += 1
     avg_moves = acc_moves / num_games
