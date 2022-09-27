@@ -61,8 +61,9 @@ def self_play(local_model, device, p_id, training_games=1, eval_depth=200, epoch
 def mp_optimize(X, y, devices, model, epochs):
     # split data across each gpu
     num_devices = len(devices)
-    X, y = np.concatenate(X, axis=0), np.concatenate(y, axis=0)
+    X, y = np.concatenate(X, axis=1), np.concatenate(y, axis=1)
     shuffle_arrays((X, y))
+
     with mp.Pool(processes=num_devices) as pool:
         args = []
         for i, (X_, y_) in enumerate(zip(np.split(X, num_devices), np.split(y, num_devices))):
