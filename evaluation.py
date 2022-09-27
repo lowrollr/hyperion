@@ -186,6 +186,7 @@ class MCST_Evaluator:
         #should probably kill all of the zero entries in the dictionary or we'll run out of memory
         self.brt.boards[self.game_hash(board)] += 1
         
+        self.brt.clear_zeros()
         
         if m:
             self.walk_tree(m)
