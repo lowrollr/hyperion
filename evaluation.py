@@ -180,11 +180,13 @@ class MCST_Evaluator:
         m = None
         if self.ucb_scores['c']:
             m = max(self.ucb_scores['c'], key=lambda x: self.ucb_scores['c'][x]['n'] if self.ucb_scores['c'][x] else 0)
-
+        else:
+            print('terminal state')
         self.training_boards.append(convert_to_nn_state(board, reps))
         #should probably kill all of the zero entries in the dictionary or we'll run out of memory
-        self.boards = defaultdict((lambda: 0), {k:v for k, v in self.boards.items() if v != 0})
         self.boards[self.game_hash(board)] += 1
+        self.boards = defaultdict((lambda: 0), {k:v for k, v in self.boards.items() if v != 0})
+        
         if m:
             self.walk_tree(m)
             board.push(m)
