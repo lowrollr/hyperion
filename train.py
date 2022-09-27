@@ -16,6 +16,8 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim import SGD
 import torch.distributed as dist
 
+from utils import BoardRepetitionTracker
+
 
 def shuffle_arrays(arrays, set_seed=-1):
     seed = np.random.randint(0, 2**(32 - 1) - 1) if set_seed < 0 else set_seed
@@ -27,7 +29,7 @@ def shuffle_arrays(arrays, set_seed=-1):
 def self_play(local_model, device, p_id, training_games=1, eval_depth=200, epochs=3):
     acc_moves = 0
     print(f'{p_id}: Begin training games on {device}')
-    evaluator = MCST_Evaluator(local_model, device, training=True)
+    evaluator = MCST_Evaluator(local_model, device, BoardRepetitionTracker(), training=True)
     board = chess.Board()
     games_played = 0
     moves = 0

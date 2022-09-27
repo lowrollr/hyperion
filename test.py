@@ -7,6 +7,8 @@ from evaluation import MCST_Evaluator
 from nn import HyperionDNN
 import numpy as np
 
+from utils import BoardRepetitionTracker
+
 def selfplay(model1, model2, device1, device2, num_games, depth):
     game_num = 0
     new_wins = 0
@@ -18,14 +20,15 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
         new_is_white = bool(game_num % 2)
         if new_is_white:
             player1, player2 = model1, model2
-        eval1 = MCST_Evaluator(player1, device1, training=False)
-        eval2 = MCST_Evaluator(player2, device2, training=False)
+        brt = BoardRepetitionTracker()
+        eval1 = MCST_Evaluator(player1, device1, brt, training=False)
+        eval2 = MCST_Evaluator(player2, device2, brt, training=False)
         moves = 0
         board = chess.Board()
         while True:
             m = None
             if board.turn:
-                m = eval1.make_best_move(board, depth)          
+                m = eval1.make_best_move(board, depth)        
             else:
                 m = eval2.make_best_move(board, depth)     
             

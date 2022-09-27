@@ -11,16 +11,17 @@ from sys import maxsize
 from trainer import MPTrainer
 from collections import defaultdict
 
+from utils import BoardRepetitionTracker
+
 ALMOST_INF = maxsize
 
 class MCST_Evaluator:
-    def __init__(self, local_model, device, training = True):
+    def __init__(self, local_model, device, brt, training = True):
         
         self.local_model = local_model
         self.device = device
         self.ucb_scores = dict()
-        self.boards = defaultdict(lambda: 0)
-        self.boards[self.game_hash(chess.Board())] = 1
+        self.brt = brt
         self.training_boards = []
         self.model_runs = 0
         self.training = training
@@ -30,8 +31,7 @@ class MCST_Evaluator:
         self.model_runs = 0
         self.training_boards = []
         self.ucb_scores = dict()
-        self.boards = defaultdict(lambda: 0)
-        self.boards[self.game_hash(chess.Board())] = 1
+        self.brt.reset()
 
     @staticmethod
     def ucb1(total_score: float, num_visits: int, num_parent_visits: int, c_val: int = 2) -> float:
@@ -47,7 +47,7 @@ class MCST_Evaluator:
             return -1 if board.turn else 1
         elif board.is_fifty_moves():
             return 0
-        elif self.boards[hash] >= 3:
+        elif self.brt.boards[hash] >= 3:
             return 0
         elif board.is_stalemate() or board.is_insufficient_material():
             return 0
@@ -67,8 +67,8 @@ class MCST_Evaluator:
 
     def explore(self, board: chess.Board, ucb_scores) -> Tuple[float, chess.Move]:
         board_hash = self.game_hash(board)
-        self.boards[board_hash] += 1
-        reps = self.boards[board_hash]
+        self.brt.boards[board_hash] += 1
+        reps = self.brt.boards[board_hash]
         term_state = self.terminal_state(board, board_hash)
 
         if term_state is not None:
@@ -76,7 +76,7 @@ class MCST_Evaluator:
             ucb_scores['t'] = result
             ucb_scores['n'] = 1
             ucb_scores['c'] = {}
-            self.boards[board_hash] -= 1
+            self.brt.boards[board_hash] -= 1
             return (result, None, reps - 1)
         
         if not ucb_scores: # if at leaf node, use nn to choose move
@@ -92,7 +92,7 @@ class MCST_Evaluator:
             adj_result = (result if board.turn else -result) 
             ucb_scores['t'] = adj_result
             ucb_scores['n'] = 1
-            self.boards[board_hash] -= 1
+            self.brt.boards[board_hash] -= 1
             return (adj_result, move, reps - 1)
 
         # otherwise choose best expansion to explore
@@ -105,7 +105,7 @@ class MCST_Evaluator:
         board.pop()
         ucb_scores['t'] += -result
         ucb_scores['n'] += 1
-        self.boards[board_hash] -= 1
+        self.brt.boards[board_hash] -= 1
         return (-result, move, reps - 1)
         
 
@@ -184,8 +184,8 @@ class MCST_Evaluator:
             print('terminal state')
         self.training_boards.append(convert_to_nn_state(board, reps))
         #should probably kill all of the zero entries in the dictionary or we'll run out of memory
-        self.boards[self.game_hash(board)] += 1
-        self.boards = defaultdict((lambda: 0), {k:v for k, v in self.boards.items() if v != 0})
+        self.brt.boards[self.game_hash(board)] += 1
+        
         
         if m:
             self.walk_tree(m)
