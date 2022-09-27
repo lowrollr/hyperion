@@ -134,7 +134,7 @@ class MCST_Evaluator:
             return choices(moves, move_ps, k=1)[0]
 
     def choose_move(self, board: chess.Board, ucb_scores, reps: int, exploring = False) -> Tuple[float, int, chess.Move]:
-        legal_moves = ucb_scores['c'].keys()
+        legal_moves = list(ucb_scores['c'].keys())
         board_states = []
 
 
