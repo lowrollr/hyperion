@@ -36,6 +36,7 @@ def self_play(local_model, device, p_id, training_games=1, eval_depth=200, epoch
     train_X = []
     train_y = []
     while games_played < training_games:
+        move_start = time.time()
         move = evaluator.make_best_move(board, eval_depth)
         if move is None:
             game_result = evaluator.terminal_state(board)
@@ -51,7 +52,7 @@ def self_play(local_model, device, p_id, training_games=1, eval_depth=200, epoch
             evaluator.reset()
         else:
             moves += 1
-            print(f'({p_id}) {moves}: {move.uci()}')
+            print(f'({p_id}) {moves}: {move.uci()} : {round(time.time() - move_start, 3)}s')
 
     avg_moves = acc_moves / games_played
     avg_time = acc_times / games_played
