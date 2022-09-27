@@ -85,6 +85,7 @@ def optimize(p_id, devices, model, X, y, loss_fn, epochs, batch_size=20):
         rank=p_id
     )
     torch.manual_seed(0)
+    print(model.device, X.get_device(), y.get_device())
     # maybe its worth implementing an A3C SharedAdam-esque optimizer and using it here as well for more parallelization
     optimizer = SGD(model.parameters(), lr=0.001)
     model = DDP(model, device_ids=[p_id])
