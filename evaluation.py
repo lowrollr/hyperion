@@ -20,7 +20,7 @@ class MCST_Evaluator:
         self.device = device
         self.ucb_scores = dict()
         self.boards = defaultdict(lambda: 0)
-        self.boards[self.game_hash(chess.Board())] += 1
+        self.boards[self.game_hash(chess.Board())] = 1
         self.training_boards = []
         self.model_runs = 0
         self.training = training
@@ -31,7 +31,7 @@ class MCST_Evaluator:
         self.training_boards = []
         self.ucb_scores = dict()
         self.boards = defaultdict(lambda: 0)
-        self.boards[self.game_hash(chess.Board())] += 1
+        self.boards[self.game_hash(chess.Board())] = 1
 
     @staticmethod
     def ucb1(total_score: float, num_visits: int, num_parent_visits: int, c_val: int = 2) -> float:
@@ -185,10 +185,9 @@ class MCST_Evaluator:
         self.training_boards.append(convert_to_nn_state(board, reps))
         #should probably kill all of the zero entries in the dictionary or we'll run out of memory
         self.boards = defaultdict((lambda: 0), {k:v for k, v in self.boards.items() if v != 0})
-
+        self.boards[self.game_hash(board)] += 1
         if m:
             self.walk_tree(m)
             board.push(m)
-            self.boards[self.game_hash(board)] += 1
         
         return m
