@@ -12,9 +12,9 @@ import os
 import numpy as np
 
 from trainer import MPTrainer
-# from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim import SGD
-# import torch.distributed as dist
+import torch.distributed as dist
 
 
 def shuffle_arrays(arrays, set_seed=-1):
@@ -57,52 +57,52 @@ def self_play(local_model, device, p_id, training_games=1, eval_depth=200, epoch
     avg_time = acc_times / games_played
     return (train_X, train_y, avg_moves, avg_time)
 
-# def mp_optimize(X, y, devices, model, epochs):
-#     # split data across each gpu
-#     num_devices = len(devices)
-#     X, y = np.concatenate(X, axis=1).squeeze(), np.concatenate(y, axis=1).squeeze()
-#     shuffle_arrays((X, y))
+def mp_optimize(X, y, devices, model, epochs):
+    # split data across each gpu
+    num_devices = len(devices)
+    X, y = np.concatenate(X, axis=1).squeeze(), np.concatenate(y, axis=1).squeeze()
+    shuffle_arrays((X, y))
 
-#     with mp.Pool(processes=num_devices) as pool:
-#         args = []
-#         for i, (X_, y_) in enumerate(zip(np.split(X, num_devices), np.split(y, num_devices))):
-#             device = devices[i]
-#             X_, y_ = torch.from_numpy(X_).to(device), \
-#                      torch.from_numpy(y_).to(device)
-#             t_model = model.to(device)
-#             t_model.migrate_submodules()
-#             args.append((i, devices, t_model, X_, y_, torch.nn.functional.mse_loss, epochs))
-#         pool.starmap(optimize, args)
-#         print('Finsihed optimization')
+    with mp.Pool(processes=num_devices) as pool:
+        args = []
+        for i, (X_, y_) in enumerate(zip(np.split(X, num_devices), np.split(y, num_devices))):
+            device = devices[i]
+            X_, y_ = torch.from_numpy(X_).to(device), \
+                     torch.from_numpy(y_).to(device)
+            t_model = model.to(device)
+            t_model.migrate_submodules()
+            args.append((i, devices, t_model, X_, y_, torch.nn.functional.mse_loss, epochs))
+        pool.starmap(optimize, args)
+        print('Finsihed optimization')
     
-# def optimize(p_id, devices, model, X, y, loss_fn, epochs, batch_size=20):
+def optimize(p_id, devices, model, X, y, loss_fn, epochs, batch_size=20):
     
-#     dist.init_process_group(
-#         backend='nccl',
-#         init_method='env://',
-#         world_size=len(devices),
-#         rank=p_id
-#     )
-#     torch.manual_seed(0)
-#     # maybe its worth implementing an A3C SharedAdam-esque optimizer and using it here as well for more parallelization
-#     optimizer = SGD(model.parameters(), lr=0.001)
-#     model = DDP(model, device_ids=[i for i in range(len(devices))])
-#     num_samples = len(X)
-#     for epoch in range(epochs):
-#         for i in range(0, num_samples, batch_size):
-#             batch_X = X[i: i + batch_size]
-#             batch_y = y[i: i + batch_size]
+    dist.init_process_group(
+        backend='nccl',
+        init_method='env://',
+        world_size=len(devices),
+        rank=p_id
+    )
+    torch.manual_seed(0)
+    # maybe its worth implementing an A3C SharedAdam-esque optimizer and using it here as well for more parallelization
+    optimizer = SGD(model.parameters(), lr=0.001)
+    model = DDP(model, device_ids=[i for i in range(len(devices))])
+    num_samples = len(X)
+    for epoch in range(epochs):
+        for i in range(0, num_samples, batch_size):
+            batch_X = X[i: i + batch_size]
+            batch_y = y[i: i + batch_size]
 
-#             optimizer.zero_grad()
-#             out = model(batch_X)
+            optimizer.zero_grad()
+            out = model(batch_X)
             
-#             batch_y = batch_y.unsqueeze(1)    
-#             loss = loss_fn(out, batch_y)
-#             loss.backward()
-#             optimizer.step()
-#         if p_id == 0 and i % 100 == 0:
-#             print(f'Epoch [{epoch+1}/{epochs}] Step [{i+1}/{num_samples}] :: Loss = {round(loss.item(), 4)}')
-#     print(f'Epoch [{epochs}/{epochs}] Step [{num_samples}/{num_samples}] :: Loss = {round(loss.item(), 4)}')
+            batch_y = batch_y.unsqueeze(1)    
+            loss = loss_fn(out, batch_y)
+            loss.backward()
+            optimizer.step()
+        if p_id == 0 and i % 100 == 0:
+            print(f'Epoch [{epoch+1}/{epochs}] Step [{i+1}/{num_samples}] :: Loss = {round(loss.item(), 4)}')
+    print(f'Epoch [{epochs}/{epochs}] Step [{num_samples}/{num_samples}] :: Loss = {round(loss.item(), 4)}')
     
 
 def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
