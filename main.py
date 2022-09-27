@@ -48,7 +48,8 @@ if __name__ == '__main__':
         torch.set_default_tensor_type(torch.FloatTensor)
     torch.set_default_dtype(torch.float)
     torch.multiprocessing.set_start_method('spawn')
-    training_loop(devices)
+    while True:
+        training_loop(devices)
     
 
 
