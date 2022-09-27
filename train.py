@@ -111,7 +111,7 @@ def optimize(p_id, devices, model, X, y, loss_fn, epochs, batch_size=20):
         
 
 def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
-    model = HyperionDNN()
+    model = HyperionDNN().to(devices[0])
     if os.path.exists('./saved_models/model_best.pth'):
         model.load_state_dict(torch.load('./saved_models/model_best.pth'))
     p_id = 0
@@ -134,5 +134,5 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
         mp_optimize(train_X, train_y, devices, model, num_epochs)
         # save the model
         torch.save(model.state_dict(), './saved_models/model_last.pth')
-    
+    model = model.to('cpu')
     return model, (avg_loss, avg_moves, avg_time)
