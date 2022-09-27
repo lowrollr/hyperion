@@ -3,10 +3,12 @@ from test import mp_selfplay
 import torch
 import argparse
 import chess
+import os
 
 
 
 def training_loop(devices):
+    
     print("Starting training...")
     trained_model, (avg_loss, avg_moves, avg_time) = mp_train(devices, args.epoch_games, args.training_depth, args.training_processes, args.num_epochs)
     print('Finished training epoch, beginning versus play...')
@@ -33,6 +35,8 @@ if __name__ == '__main__':
     parser.add_argument('--num_epochs', type=int, default=3, required=False)
     args = parser.parse_args()
     torch.backends.cudnn.benchmark = True
+    os.environ['MASTER_ADDR'] = 'localhost'
+    os.environ['MASTER_PORT'] = '12355'
     
     devices = [torch.device('cpu')]
     if torch.cuda.is_available():
