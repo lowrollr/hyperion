@@ -4,7 +4,7 @@ import torch.multiprocessing as mp
 from evaluation import MCST_Evaluator
 from shared_adam import SharedAdam
 from nn import HyperionDNN
-from torch.optim import sgd
+from torch.optim import SGD
 import chess
 import torch
 import time
@@ -74,7 +74,7 @@ def mp_optimize(X, y, devices, model, epochs):
             if i > 0:
                 t_model = deepcopy(model).to(device)
                 t_model.migrate_submodules()
-            args.append((i, devices, t_model, X_, y_, torch.nn.functional.mse_loss, epochs))
+            args.append((i, devices, t_model, X_, y_, torch.nn.functional.l1_loss, epochs))
         pool.starmap(optimize, args)
         print('Finsihed optimization')
     
@@ -89,7 +89,7 @@ def optimize(p_id, devices, model, X, y, loss_fn, epochs, batch_size=20):
     torch.manual_seed(0)
     print(model.device, X.get_device(), y.get_device())
     # maybe its worth implementing an A3C SharedAdam-esque optimizer and using it here as well for more parallelization
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = SGD(model.parameters(), lr=0.001)
     model = DDP(model, device_ids=[p_id])
     num_samples = len(X)
     with torch.autograd.detect_anomaly():
