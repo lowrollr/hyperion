@@ -70,8 +70,10 @@ def mp_optimize(X, y, devices, model, epochs):
             device = devices[i]
             X_, y_ = torch.from_numpy(X_).to(device), \
                      torch.from_numpy(y_).to(device)
-            t_model = model.to(device)
-            t_model.migrate_submodules()
+            t_model = model
+            if i > 0:
+                t_model = deepcopy(model).to(device)
+                t_model.migrate_submodules()
             args.append((i, devices, t_model, X_, y_, torch.nn.functional.mse_loss, epochs))
         pool.starmap(optimize, args)
         print('Finsihed optimization')
