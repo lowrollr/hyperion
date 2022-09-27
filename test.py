@@ -1,4 +1,5 @@
 from concurrent.futures import process
+from copy import deepcopy
 import os
 import torch
 import chess
@@ -68,16 +69,25 @@ def mp_selfplay(candidate_model, devices, num_games, depth, num_procs):
     old_wins = 0
     draws = 0
     avg_moves = 0
-    candidate_model = candidate_model.to(devices[-1])
-    candidate_model.migrate_submodules()
-    best_model = HyperionDNN().to(devices[0])
-    best_model.migrate_submodules()
+    best_model = HyperionDNN()
     num_devices = len(devices)
     if os.path.exists('./saved_models/model_best.pth'):
         best_model.load_state_dict(torch.load('./saved_models/model_best.pth'))
         with mp.Pool(processes=num_procs) as pool:
-            results = pool.starmap(selfplay, [(candidate_model, best_model, devices[i%num_devices], devices[(i+1)%num_devices], num_games, depth) for i in range(num_procs)])
-            
+            args = []
+            local_candidates = [deepcopy(cand_model).to(g) for g in devices]
+            local_bests = [deepcopy(best_model).to(g) for g in devices]
+            for m in local_bests:
+                m.migrate_submodules()
+            for m in local_candidates:
+                m.migrate_submodules()
+            for i in range(num_procs):
+                gpu0 = devices[(i)%num_devices]
+                gpu1 = devices[(i+1)%num_devices]
+                cand_model = local_candidates[(i)%num_devices]
+                b_model = local_bests[(i+1)%num_devices]
+                args.append((cand_model, b_model, gpu0, gpu1, num_games, depth))
+            results = pool.starmap(selfplay, args)
             nw, ow, d, a = zip(*results)
             new_wins = sum(nw)
             old_wins = sum(ow)

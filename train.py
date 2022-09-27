@@ -111,7 +111,7 @@ def optimize(p_id, devices, model, X, y, loss_fn, epochs, batch_size=20):
         
 
 def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
-    model = HyperionDNN().to(devices[0])
+    model = HyperionDNN()
     if os.path.exists('./saved_models/model_best.pth'):
         model.load_state_dict(torch.load('./saved_models/model_best.pth'))
     p_id = 0
@@ -120,10 +120,10 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
     train_X, train_y = None, None
     with mp.Pool(processes=total_procs) as pool:
         args = []
-        for d_, device in reversed(list(enumerate(devices))):
+        for _, device in reversed(list(enumerate(devices))):
             t_model = deepcopy(model).to(device)
             t_model.migrate_submodules()
-            for i in range(num_procs - (1 if d_ == 0 else 0)):
+            for _ in range(num_procs):
                 args.append((t_model, device, p_id, epoch_games, depth, num_epochs))
                 p_id += 1
         results = pool.starmap(self_play, args)
