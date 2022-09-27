@@ -63,7 +63,7 @@ class MCST_Evaluator:
         return res
     
     def walk_tree(self, move: chess.Move):
-        self.ucb_scores = self.ucb_scores['c'][move]
+        self.ucb_scores = self.ucb_scores.get('c', dict()).get(move, dict())
 
     def explore(self, board: chess.Board, ucb_scores) -> Tuple[float, chess.Move]:
         board_hash = self.game_hash(board)
@@ -180,14 +180,13 @@ class MCST_Evaluator:
         m = None
         if self.ucb_scores['c']:
             m = max(self.ucb_scores['c'], key=lambda x: self.ucb_scores['c'][x]['n'] if self.ucb_scores['c'][x] else 0)
-        else:
-            print('terminal state')
+        
         self.training_boards.append(convert_to_nn_state(board, reps))
         #should probably kill all of the zero entries in the dictionary or we'll run out of memory
         self.brt.boards[self.game_hash(board)] += 1
         
         self.brt.clear_zeros()
-        
+
         if m:
             self.walk_tree(m)
             board.push(m)

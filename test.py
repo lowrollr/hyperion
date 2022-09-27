@@ -29,8 +29,10 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
             m = None
             if board.turn:
                 m = eval1.make_best_move(board, depth)        
+                eval2.walk_tree(m)
             else:
                 m = eval2.make_best_move(board, depth)     
+                eval1.walk_tree(m)
             
             if m is None:
                 acc_moves += moves
