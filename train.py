@@ -66,7 +66,7 @@ def mp_optimize(X, y, devices, model, epochs):
 
     with mp.Pool(processes=num_devices) as pool:
         args = []
-        for i, (X_, y_) in enumerate(zip(np.split(X, num_devices), np.split(y, num_devices))):
+        for i, (X_, y_) in enumerate(zip(np.array_split(X, num_devices), np.array_split(y, num_devices))):
             device = devices[i]
             X_, y_ = torch.from_numpy(X_).to(device), \
                      torch.from_numpy(y_).to(device)
