@@ -130,7 +130,7 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
         avg_moves, avg_time = np.mean(moves), np.mean(times)
 
     if train_X:
-        # mp_optimize(train_X, train_y, devices, model, num_epochs)
+        mp_optimize(train_X, train_y, devices, model, num_epochs)
         # save the model
         torch.save(model.state_dict(), './saved_models/model_last.pth')
     
