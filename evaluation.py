@@ -48,7 +48,6 @@ class MCST_Evaluator:
         elif board.is_fifty_moves():
             return 0
         elif self.boards[hash] >= 3:
-            print('repetition')
             return 0
         elif board.is_stalemate() or board.is_insufficient_material():
             return 0
