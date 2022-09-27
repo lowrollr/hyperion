@@ -45,10 +45,12 @@ class MCST_Evaluator:
             hash = board.fen()
         if board.is_checkmate():
             return -1 if board.turn else 1
-        elif board.is_fifty_moves() or self.boards[hash] == 3:
+        elif board.is_fifty_moves():
             return 0
-        elif board.is_stalemate() or \
-            (board.has_insufficient_material(1) and board.has_insufficient_material(0)):
+        elif self.boards[hash] >= 3:
+            print('repetition')
+            return 0
+        elif board.is_stalemate() or board.is_insufficient_material():
             return 0
         else:
             return None
