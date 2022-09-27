@@ -17,13 +17,15 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
     draws = 0
     acc_moves = 0
     while game_num < num_games:
-        player1, player2 = model2, model1
+        player1, player2 = model1, model2
+        d1, d2 = device1, device2
         new_is_white = bool(game_num % 2)
-        if new_is_white:
-            player1, player2 = model1, model2
+        if not new_is_white:
+            player1, player2 = model2, model1
+            d1, d2 = device2, device1
         brt = BoardRepetitionTracker()
-        eval1 = MCST_Evaluator(player1, device1, brt, training=False)
-        eval2 = MCST_Evaluator(player2, device2, brt, training=False)
+        eval1 = MCST_Evaluator(player1, d1, brt, training=False)
+        eval2 = MCST_Evaluator(player2, d2, brt, training=False)
         moves = 0
         board = chess.Board()
         while True:
