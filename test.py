@@ -75,7 +75,7 @@ def mp_selfplay(candidate_model, devices, num_games, depth, num_procs):
         best_model.load_state_dict(torch.load('./saved_models/model_best.pth'))
         with mp.Pool(processes=num_procs) as pool:
             args = []
-            local_candidates = [deepcopy(cand_model).to(g) for g in devices]
+            local_candidates = [deepcopy(candidate_model).to(g) for g in devices]
             local_bests = [deepcopy(best_model).to(g) for g in devices]
             for m in local_bests:
                 m.migrate_submodules()
