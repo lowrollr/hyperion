@@ -69,7 +69,9 @@ def mp_selfplay(candidate_model, devices, num_games, depth, num_procs):
     draws = 0
     avg_moves = 0
     candidate_model = candidate_model.to(devices[-1])
+    candidate_model.migrate_submodules()
     best_model = HyperionDNN().to(devices[0])
+    best_model.migrate_submodules()
     if os.path.exists('./saved_models/model_best.pth'):
         best_model.load_state_dict(torch.load('./saved_models/model_best.pth'))
         with mp.Pool(processes=num_procs) as pool:
