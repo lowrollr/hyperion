@@ -42,7 +42,7 @@ class MCST_Evaluator:
 
     def terminal_state(self, board: chess.Board, hash: str = None) -> Optional[int]:
         if hash is None:
-            hash = board.fen()
+            hash = self.game_hash(board)
         if board.is_checkmate():
             return -1 if board.turn else 1
         elif board.is_fifty_moves():
