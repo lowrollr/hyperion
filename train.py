@@ -92,21 +92,22 @@ def optimize(p_id, devices, model, X, y, loss_fn, epochs, batch_size=20):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     model = DDP(model, device_ids=[p_id])
     num_samples = len(X)
-    for epoch in range(epochs):
-        for i in range(0, num_samples, batch_size):
-            batch_X = X[i: i + batch_size]
-            batch_y = y[i: i + batch_size]
+    with torch.autograd.detect_anomaly():
+        for epoch in range(epochs):
+            for i in range(0, num_samples, batch_size):
+                batch_X = X[i: i + batch_size]
+                batch_y = y[i: i + batch_size]
 
-            optimizer.zero_grad()
-            out = model(batch_X)
-            
-            batch_y = batch_y.unsqueeze(1)    
-            loss = loss_fn(out, batch_y)
-            loss.backward()
-            optimizer.step()
-        if p_id == 0 and i % 100 == 0:
-            print(f'Epoch [{epoch+1}/{epochs}] Step [{i+1}/{num_samples}] :: Loss = {round(loss.item(), 4)}')
-    print(f'Epoch [{epochs}/{epochs}] Step [{num_samples}/{num_samples}] :: Loss = {round(loss.item(), 4)}')
+                optimizer.zero_grad()
+                out = model(batch_X)
+                
+                batch_y = batch_y.unsqueeze(1)    
+                loss = loss_fn(out, batch_y)
+                loss.backward()
+                optimizer.step()
+            if p_id == 0 and i % 100 == 0:
+                print(f'Epoch [{epoch+1}/{epochs}] Step [{i+1}/{num_samples}] :: Loss = {round(loss.item(), 4)}')
+        print(f'Epoch [{epochs}/{epochs}] Step [{num_samples}/{num_samples}] :: Loss = {round(loss.item(), 4)}')
     
 
 def mp_train(devices, epoch_games, depth, num_procs, num_epochs):

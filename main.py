@@ -35,7 +35,6 @@ if __name__ == '__main__':
     parser.add_argument('--num_epochs', type=int, default=3, required=False)
     args = parser.parse_args()
     torch.backends.cudnn.benchmark = True
-    torch.autograd.detect_anomaly(True)
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '12355'
     
