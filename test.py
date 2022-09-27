@@ -18,8 +18,8 @@ def selfplay(model1, model2, device1, device2, num_games, depth):
         new_is_white = bool(game_num % 2)
         if new_is_white:
             player1, player2 = model1, model2
-        eval1 = MCST_Evaluator(player1, None, device1, None, training=False)
-        eval2 = MCST_Evaluator(player2, None, device2, None, training=False)
+        eval1 = MCST_Evaluator(player1, device1, training=False)
+        eval2 = MCST_Evaluator(player2, device2, training=False)
         moves = 0
         board = chess.Board()
         while True:
