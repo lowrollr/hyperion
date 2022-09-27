@@ -7,7 +7,7 @@ import os
 
 
 
-def training_loop(devices):
+def training_loop(devices, args):
     
     print("Starting training...")
     trained_model, (avg_loss, avg_moves, avg_time) = mp_train(devices, args.epoch_games, args.training_depth, args.training_processes, args.num_epochs)
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     torch.set_default_dtype(torch.float)
     torch.multiprocessing.set_start_method('spawn')
     while True:
-        training_loop(devices)
+        training_loop(devices, args)
     
 
 
