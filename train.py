@@ -58,7 +58,7 @@ def self_play(local_model, device, p_id, training_games=1, eval_depth=200, epoch
     avg_time = acc_times / games_played
     return (train_X, train_y, avg_moves, avg_time)
 
-def mp_optimize(X, y, model, devices, epochs):
+def mp_optimize(X, y, devices, model, epochs):
     # split data across each gpu
     num_devices = len(devices)
     X, y = np.concatenate(X, axis=0), np.concatenate(y, axis=0)
