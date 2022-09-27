@@ -120,8 +120,11 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
         for d_, device in reversed(list(enumerate(devices))):
             t_model = deepcopy(model).to(device)
             t_model.migrate_submodules()
-            for _ in range(num_procs - (1 if d_ == 0 else 0)):
-                args.append((t_model, device, p_id, epoch_games, depth, num_epochs))
+            for i in range(num_procs - (1 if d_ == 0 else 0)):
+                l_model = t_model
+                if i != 0:
+                    l_model = deepcopy(t_model)
+                args.append((l_model, device, p_id, epoch_games, depth, num_epochs))
                 p_id += 1
         results = pool.starmap(self_play, args)
         train_X, train_y, moves, times = zip(*results)
