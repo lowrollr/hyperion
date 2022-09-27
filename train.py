@@ -87,7 +87,7 @@ def optimize(p_id, devices, model, X, y, loss_fn, epochs, batch_size=20):
     torch.manual_seed(0)
     # maybe its worth implementing an A3C SharedAdam-esque optimizer and using it here as well for more parallelization
     optimizer = SGD(model.parameters(), lr=0.001)
-    model = DDP(model, device_ids=[i for i in range(len(devices))])
+    model = DDP(model, device_ids=[p_id])
     num_samples = len(X)
     for epoch in range(epochs):
         for i in range(0, num_samples, batch_size):
