@@ -72,10 +72,11 @@ def mp_selfplay(candidate_model, devices, num_games, depth, num_procs):
     candidate_model.migrate_submodules()
     best_model = HyperionDNN().to(devices[0])
     best_model.migrate_submodules()
+    num_devices = len(devices)
     if os.path.exists('./saved_models/model_best.pth'):
         best_model.load_state_dict(torch.load('./saved_models/model_best.pth'))
         with mp.Pool(processes=num_procs) as pool:
-            results = pool.starmap(selfplay, [(candidate_model, best_model, devices[0], devices[-1], num_games, depth) for _ in range(num_procs)])
+            results = pool.starmap(selfplay, [(candidate_model, best_model, devices[i%num_devices], devices[(i+1)%num_devices], num_games, depth) for i in range(num_procs)])
             
             nw, ow, d, a = zip(*results)
             new_wins = sum(nw)
