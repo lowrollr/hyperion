@@ -110,7 +110,6 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
     model = HyperionDNN().to(devices[0])
     if os.path.exists('./saved_models/model_best.pth'):
         model.load_state_dict(torch.load('./saved_models/model_best.pth'))
-    model.share_memory()
     p_id = 0
     avg_loss, avg_moves, avg_time = 0.0, 0.0, 0.0
     total_procs = (num_procs * len(devices)) - 1
