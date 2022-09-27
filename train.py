@@ -108,8 +108,7 @@ def optimize(p_id, devices, model, X, y, loss_fn, epochs, batch_size=20):
             if p_id == 0 and i % 100 == 0:
                 print(f'Epoch [{epoch+1}/{epochs}] Step [{i+1}/{num_samples}] :: Loss = {round(loss.item(), 4)}')
         print(f'Epoch [{epochs}/{epochs}] Step [{num_samples}/{num_samples}] :: Loss = {round(loss.item(), 4)}')
-        del loss
-        del out
+        
 
 def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
     model = HyperionDNN().to(devices[0])
