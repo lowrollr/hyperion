@@ -11,7 +11,6 @@ import time
 import os
 import numpy as np
 
-from trainer import MPTrainer
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim import SGD
 import torch.distributed as dist
@@ -109,9 +108,9 @@ def optimize(p_id, devices, model, X, y, loss_fn, epochs, batch_size=20):
         
 
 def mp_train(devices, epoch_games, depth, num_procs, num_epochs, rand_data):
-    model = HyperionDNN().to(devices[0])
+    model = HyperionDNN()
     if os.path.exists('./saved_models/model_best.pth'):
-        model.load_state_dict(torch.load('./saved_models/model_best.pth', map_location=model.device))
+        model.load_state_dict(torch.load('./saved_models/model_best.pth', map_location='cpu'))
     p_id = 0
     avg_loss, avg_moves, avg_time = 0.0, 0.0, 0.0
     total_procs = (num_procs * len(devices)) - 1
