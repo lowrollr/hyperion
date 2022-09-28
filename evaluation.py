@@ -8,7 +8,6 @@ from nn import convert_to_nn_state
 import numpy as np
 import torch
 from sys import maxsize
-from trainer import MPTrainer
 from collections import defaultdict
 
 from utils import BoardRepetitionTracker
