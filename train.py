@@ -127,7 +127,15 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
                 args.append((t_model, device, p_id, epoch_games, depth, num_epochs))
                 p_id += 1
         results = pool.starmap(self_play, args)
-        train_X, train_y, moves, times = zip(*results)
+        moves = []
+        times = []
+        train_X = []
+        train_y = []
+        for (tx, ty, m, t) in results:
+            moves.append(m)
+            times.append(t)
+            train_X.extend(tx)
+            train_y.extend(ty)
         avg_moves, avg_time = np.mean(moves), np.mean(times)
 
     if train_X:
