@@ -124,6 +124,7 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs, rand_data):
                 args.append((t_model, device, p_id, epoch_games, depth, rand_data))
                 p_id += 1
         results = pool.starmap(self_play, args)
+        print('Finished gathering samples!')
         moves = []
         times = []
         train_X = []

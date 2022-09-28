@@ -44,9 +44,7 @@ if __name__ == '__main__':
         devices = []
         for i in range(args.num_gpus):
             devices.append(torch.device(f"cuda:{i}"))
-        torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    else:
-        torch.set_default_tensor_type(torch.FloatTensor)
+    torch.set_default_tensor_type(torch.FloatTensor)
     torch.set_default_dtype(torch.float)
     torch.multiprocessing.set_start_method('spawn')
     training_loop(devices, args)
