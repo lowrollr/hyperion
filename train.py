@@ -26,10 +26,10 @@ def shuffle_arrays(arrays, set_seed=-1):
         rstate.shuffle(arr)
 
 
-def self_play(local_model, device, p_id, training_games=1, eval_depth=200, epochs=3):
+def self_play(local_model, device, p_id, training_games=1, eval_depth=200, rand_data=False):
     acc_moves = 0
     print(f'{p_id}: Begin training games on {device}')
-    evaluator = MCST_Evaluator(local_model, device, BoardRepetitionTracker(), training=True)
+    evaluator = MCST_Evaluator(local_model, device, BoardRepetitionTracker(), training=True, is_random=rand_data)
     board = chess.Board()
     games_played = 0
     moves = 0
@@ -108,7 +108,7 @@ def optimize(p_id, devices, model, X, y, loss_fn, epochs, batch_size=20):
     print(f'Epoch [{epochs}/{epochs}] Step [{num_samples}/{num_samples}] :: Loss = {round(loss.item(), 4)}')
         
 
-def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
+def mp_train(devices, epoch_games, depth, num_procs, num_epochs, rand_data):
     model = HyperionDNN().to(devices[0])
     if os.path.exists('./saved_models/model_best.pth'):
         model.load_state_dict(torch.load('./saved_models/model_best.pth', map_location=model.device))
@@ -122,7 +122,7 @@ def mp_train(devices, epoch_games, depth, num_procs, num_epochs):
             t_model = deepcopy(model).to(device)
             t_model.migrate_submodules()
             for _ in range(num_procs):
-                args.append((t_model, device, p_id, epoch_games, depth, num_epochs))
+                args.append((t_model, device, p_id, epoch_games, depth, rand_data))
                 p_id += 1
         results = pool.starmap(self_play, args)
         moves = []

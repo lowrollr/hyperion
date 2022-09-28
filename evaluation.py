@@ -1,6 +1,6 @@
 
 from copy import deepcopy
-from random import choice, choices
+from random import choice, choices, random
 import string
 from typing import List, Optional, Tuple
 import chess
@@ -16,8 +16,8 @@ from utils import BoardRepetitionTracker
 ALMOST_INF = maxsize
 
 class MCST_Evaluator:
-    def __init__(self, local_model, device, brt, training = True):
-        
+    def __init__(self, local_model, device, brt, training = True, is_random = False):
+        self.is_random = is_random
         self.local_model = local_model
         self.device = device
         self.ucb_scores = dict()
@@ -85,7 +85,7 @@ class MCST_Evaluator:
             for move in board.legal_moves:
                 ucb_scores['c'][move] = {}
             
-            result, _, move = self.choose_move(board, ucb_scores, reps, exploring = self.training)
+            result, _, move = self.choose_move(board, ucb_scores, reps, exploring = self.training, rand=self.is_random)
             # score eval was calculated when turn was opposite what it is now
             # if board.turn now is WHITE, score was calculated with BLACK to play
             #   so it will be inverted twice (once since NN output is from white's pov, once because it was black's turn but now it's white's)
@@ -134,8 +134,12 @@ class MCST_Evaluator:
         else:
             return choices(moves, move_ps, k=1)[0]
 
-    def choose_move(self, board: chess.Board, ucb_scores, reps: int, exploring = False) -> Tuple[float, int, chess.Move]:
+    def choose_move(self, board: chess.Board, ucb_scores, reps: int, exploring = False, rand=False) -> Tuple[float, int, chess.Move]:
         legal_moves = list(ucb_scores['c'].keys())
+        if rand:
+            weights = [(random() * 2) - 1 for _ in legal_moves]
+            best = choices([i for i in range(len(legal_moves))], weights, k=1)[0]
+            return (weights[best], best, legal_moves[best])
         board_states = []
 
 

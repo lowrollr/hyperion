@@ -10,7 +10,7 @@ import os
 def training_loop(devices, args):
     
     print("Starting training...")
-    trained_model, (avg_loss, avg_moves, avg_time) = mp_train(devices, args.epoch_games, args.training_depth, args.training_processes, args.num_epochs)
+    trained_model, (avg_loss, avg_moves, avg_time) = mp_train(devices, args.epoch_games, args.training_depth, args.training_processes, args.num_epochs, args.gen_rand_data)
     print('Finished training epoch, beginning versus play...')
     
     (new_wins, old_wins, draws, t_avg_moves) = mp_selfplay(trained_model, devices, args.testing_games, args.testing_depth, args.testing_processes)
@@ -33,6 +33,7 @@ if __name__ == '__main__':
     parser.add_argument('--testing_processes', type=int, default=4, required=False)
     parser.add_argument('--num_gpus', type=int, default=1, required=False)
     parser.add_argument('--num_epochs', type=int, default=3, required=False)
+    parser.add_argument('--gen_rand_data', action='store_true', required=False)
     args = parser.parse_args()
     torch.backends.cudnn.benchmark = True
     os.environ['MASTER_ADDR'] = 'localhost'
@@ -48,8 +49,7 @@ if __name__ == '__main__':
         torch.set_default_tensor_type(torch.FloatTensor)
     torch.set_default_dtype(torch.float)
     torch.multiprocessing.set_start_method('spawn')
-    while True:
-        training_loop(devices, args)
+    training_loop(devices, args)
     
 
 
